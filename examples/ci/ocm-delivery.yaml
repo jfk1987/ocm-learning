@@ -1,0 +1,25 @@
+# In .woodpecker/ocm-delivery.yaml des Forgejo-Repository ablegen.
+# Das CI-Image muss ocm, helm, yq, skopeo und die Shell-Skripte dieses Projekts
+# enthalten. Es darf aus einer öffentlichen Registry kommen: Es ist Teil des
+# Lab-Bootstraps, nicht der air-gapped Zielanwendung.
+when:
+  - event: tag
+
+steps:
+  deliver-ocm-component:
+    image: REPLACE_WITH_PUBLISHED_ocm-delivery_IMAGE
+    environment:
+      DELIVERY_DIR: delivery/target-application
+      OCM_REPOSITORY:
+        from_secret: target_ocm_repository
+      TARGET_REGISTRY_HOST:
+        from_secret: target_registry_host
+      REGISTRY_USERNAME:
+        from_secret: target_registry_username
+      REGISTRY_PASSWORD:
+        from_secret: target_registry_password
+    commands:
+      - test -n "$OCM_REPOSITORY"
+      - mkdir -p "$HOME/.docker"
+      - skopeo login --authfile "$HOME/.docker/config.json" --username "$REGISTRY_USERNAME" --password "$REGISTRY_PASSWORD" "$TARGET_REGISTRY_HOST"
+      - ./scripts/deliver-application.sh config/application.lock.yaml "$DELIVERY_DIR" "$OCM_REPOSITORY"

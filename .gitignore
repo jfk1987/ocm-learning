@@ -1,0 +1,9 @@
+.DS_Store
+.ocm/
+dist/
+transport-archive/
+config/lab.env
+config/artifactory-lab.env
+/delivery/**/component-constructor.yaml
+/delivery/**/transport-archive/
+/delivery/**/transport-archive.descriptor-source/

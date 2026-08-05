@@ -1,0 +1,27 @@
+# Dieses Lockfile ist der Freigabevertrag für EINE Zielanwendung.
+# Es wird in Schritt 01 aus dem gerenderten, fest gepinnten Chart befüllt.
+schemaVersion: 1
+component:
+  name: example.org/team/target-application
+  version: 0.1.0
+charts:
+  - name: target-application
+    source: REPLACE_WITH_UPSTREAM_CHART_REFERENCE
+    version: TBD
+    digest: TBD
+    # Relativ zum Arbeitsverzeichnis des Release-Builds.
+    path: target-application-chart.tgz
+values:
+  path: values-airgap.yaml
+images:
+  # - name: api
+  #   version: 1.2.3
+  #   imageReference: ghcr.io/example/api:1.2.3@sha256:REPLACE_WITH_64_HEX_DIGEST
+  # - name: database-migration
+  #   version: 1.2.3
+  #   imageReference: ghcr.io/example/migrate:1.2.3@sha256:REPLACE_WITH_64_HEX_DIGEST
+additionalResources:
+  # - name: database-migration
+  #   type: blob
+  #   inputType: Dir/v1
+  #   path: manifests/migration
