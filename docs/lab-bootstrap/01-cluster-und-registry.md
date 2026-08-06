@@ -125,9 +125,15 @@ Der zusätzliche `lab-ingress` Service macht Traefik innerhalb des Clusters an
 Port `8080` erreichbar. So ist beispielsweise
 `http://forgejo.ocm.test:8080` innen und außen dieselbe URL.
 
+Das Skript legt die Zone `ocm.test` als eigenen CoreDNS Server Block in
+`lab.server` an. Es verwendet bewusst kein `lab.override`: Der K3s-Standard-
+Server-Block enthält bereits ein `hosts`-Plugin, und CoreDNS erlaubt dieses
+Plugin pro Server Block nur einmal.
+
 Teste die DNS-Auflösung innerhalb des Clusters:
 
 ```bash
+kubectl delete pod lab-dns-test --ignore-not-found
 kubectl run lab-dns-test \
   --image=busybox:1.36 \
   --restart=Never --command -- \
@@ -135,6 +141,20 @@ kubectl run lab-dns-test \
 kubectl logs lab-dns-test
 kubectl delete pod lab-dns-test
 ```
+
+Falls eine ältere Version des Skripts bereits `lab.override` erzeugt hat und
+CoreDNS mit `plugin/hosts: this plugin can only be used once per Server Block`
+ausfällt, repariert ein erneuter Aufruf die ConfigMap und startet CoreDNS neu:
+
+```bash
+./scripts/configure-lab-hostnames.sh
+kubectl -n kube-system get configmap coredns-custom -o yaml
+kubectl -n kube-system rollout status deployment/coredns --timeout=120s
+kubectl -n kube-system logs deployment/coredns --tail=50
+```
+
+Unter `data` darf danach nur `lab.server`, nicht mehr `lab.override`, für das
+Lab stehen.
 
 ## 5. Push vom Host prüfen
 

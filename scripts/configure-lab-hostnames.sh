@@ -13,15 +13,36 @@ if [[ -z "${ingress_ip}" || "${ingress_ip}" == "None" ]]; then
   exit 1
 fi
 
-override=$(printf 'hosts {\n  %s forgejo.ocm.test woodpecker.ocm.test\n  fallthrough\n}\n' \
-  "${ingress_ip}")
+# K3s verwendet im Standard-Server-Block bereits das hosts-Plugin für
+# /etc/coredns/NodeHosts. Ein zweites hosts-Plugin in einer *.override-Datei
+# würde CoreDNS mit "this plugin can only be used once" beenden. Deshalb
+# bekommt die Lab-Zone einen eigenen Server Block über eine *.server-Datei.
+if ! kubectl -n kube-system get configmap coredns-custom >/dev/null 2>&1; then
+  kubectl -n kube-system create configmap coredns-custom
+fi
 
-kubectl -n kube-system create configmap coredns-custom \
-  --from-literal=lab.override="${override}" \
-  --dry-run=client -o yaml | kubectl apply -f -
+config_patch=$(printf '%s' \
+  '{"data":{"lab.override":null,"lab.server":"ocm.test:53 {\n  errors\n  hosts {\n    ' \
+  "${ingress_ip}" \
+  ' forgejo.ocm.test woodpecker.ocm.test\n  }\n}\n"}}')
+
+kubectl -n kube-system patch configmap coredns-custom \
+  --type=merge --patch "${config_patch}"
 
 kubectl -n kube-system rollout restart deployment/coredns
 kubectl -n kube-system rollout status deployment/coredns --timeout=120s
+
+if kubectl -n kube-system get configmap coredns-custom \
+  -o jsonpath='{.data.lab\.override}' | grep -q .; then
+  echo 'Veralteter CoreDNS-Eintrag lab.override ist noch vorhanden.' >&2
+  exit 1
+fi
+
+if ! kubectl -n kube-system get configmap coredns-custom \
+  -o jsonpath='{.data.lab\.server}' | grep -q '^ocm\.test:53'; then
+  echo 'CoreDNS-Server-Block lab.server fehlt.' >&2
+  exit 1
+fi
 
 if ! kubectl -n kube-system get endpoints lab-ingress \
   -o jsonpath='{.subsets[*].addresses[*].ip}' | grep -q .; then
