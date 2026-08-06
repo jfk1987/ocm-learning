@@ -1,0 +1,9 @@
+when:
+  - event: push
+
+steps:
+  - name: local-registry-smoke-test
+    image: localhost:5000/lab/alpine:3.21
+    commands:
+      - echo "Woodpecker-Pipeline läuft im Kubernetes-Backend."
+      - cat /etc/alpine-release

@@ -1,0 +1,44 @@
+# Woodpecker 3.16 / Chart 3.6.5, bewusst klein für das Lernlabor.
+agent:
+  replicaCount: 1
+  persistence:
+    enabled: false
+  env:
+    WOODPECKER_BACKEND: kubernetes
+    # Im Lab bleiben Agent und kurzlebige Pipeline-Pods in einem Namespace.
+    # So passt die vom Chart erzeugte namespaced Role ohne Zusatzrechte.
+    WOODPECKER_BACKEND_K8S_NAMESPACE: woodpecker
+    WOODPECKER_BACKEND_K8S_STORAGE_RWX: false
+    WOODPECKER_BACKEND_K8S_VOLUME_SIZE: 2G
+    WOODPECKER_MAX_WORKFLOWS: "1"
+  serviceAccount:
+    create: true
+    rbac:
+      create: true
+
+server:
+  statefulSet:
+    replicaCount: 1
+  persistentVolume:
+    enabled: true
+    size: 2Gi
+  env:
+    WOODPECKER_HOST: http://woodpecker.ocm.test:8080
+    WOODPECKER_FORGEJO: "true"
+    WOODPECKER_FORGEJO_URL: http://forgejo.ocm.test:8080
+    WOODPECKER_ADMIN: ocm-admin
+    # Forgejo selbst erlaubt keine öffentliche Registrierung. Für das
+    # Ein-Benutzer-Lab darf sich der vorhandene Forgejo-Benutzer anmelden.
+    WOODPECKER_OPEN: "true"
+  extraSecretNamesForEnvFrom:
+    - woodpecker-forgejo
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    hosts:
+      - host: woodpecker.ocm.test
+        paths:
+          - path: /
+            backend:
+              serviceName: woodpecker-server
+              servicePort: 80

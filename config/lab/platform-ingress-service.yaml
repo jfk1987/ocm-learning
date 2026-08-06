@@ -1,0 +1,18 @@
+# Der k3d-Load-Balancer veröffentlicht Traefik auf dem Host an Port 8080.
+# Diese zweite Service-Adresse bietet denselben Port auch innerhalb des
+# Clusters an. Dadurch sind die öffentlichen OAuth-URLs aus Pods erreichbar.
+apiVersion: v1
+kind: Service
+metadata:
+  name: lab-ingress
+  namespace: kube-system
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/instance: traefik-kube-system
+    app.kubernetes.io/name: traefik
+  ports:
+    - name: web-lab
+      protocol: TCP
+      port: 8080
+      targetPort: web

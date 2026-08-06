@@ -2,7 +2,7 @@
 # Prüft die Voraussetzungen für den vollständigen Bootstrap-Lernpfad.
 set -euo pipefail
 
-required=(docker k3d kubectl helm ocm yq skopeo)
+required=(docker git curl openssl k3d kubectl helm ocm yq skopeo)
 missing=()
 for command in "${required[@]}"; do
   command -v "$command" >/dev/null 2>&1 || missing+=("$command")

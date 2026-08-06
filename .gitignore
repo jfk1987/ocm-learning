@@ -4,6 +4,7 @@ dist/
 transport-archive/
 config/lab.env
 config/artifactory-lab.env
+.lab/
 /delivery/**/component-constructor.yaml
 /delivery/**/transport-archive/
 /delivery/**/transport-archive.descriptor-source/

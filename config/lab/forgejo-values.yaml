@@ -1,0 +1,35 @@
+# Bewusst kleine Einzelinstanz für das lokale Lernlabor.
+replicaCount: 1
+
+persistence:
+  enabled: true
+  size: 5Gi
+
+ingress:
+  enabled: true
+  className: traefik
+  hosts:
+    - host: forgejo.ocm.test
+      paths:
+        - path: /
+          pathType: Prefix
+          port: http
+
+gitea:
+  admin:
+    existingSecret: forgejo-admin
+    # Das Secret initialisiert das Konto nur beim ersten Start. Danach wird das
+    # Passwort in Forgejo gepflegt und nicht bei jedem Helm-Upgrade überschrieben.
+    passwordMode: initialOnlyRequireReset
+  config:
+    database:
+      DB_TYPE: sqlite3
+    server:
+      DOMAIN: forgejo.ocm.test
+      ROOT_URL: http://forgejo.ocm.test:8080/
+      SSH_DOMAIN: forgejo.ocm.test
+    service:
+      DISABLE_REGISTRATION: true
+    webhook:
+      # Wird in Lab 03 für die Kommunikation mit Woodpecker benötigt.
+      ALLOWED_HOST_LIST: external,loopback,private
