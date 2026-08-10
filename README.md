@@ -24,6 +24,20 @@ Die Plattformdienste dürfen selbst Images aus beliebigen Quellen beziehen.
 Das Ziel ist ausschließlich, **alle Ressourcen der Zielanwendung** in ihrer
 OCI Registry bereitzustellen und sie ohne Internetzugang zu deployen.
 
+## Zwei Git-Repositories mit unterschiedlichen Aufgaben
+
+Dieses Repository `ocm-learning` ist das **Lern- und Bootstrap-Repository**.
+Es enthält die Anleitungen, Lab-Konfigurationen, wiederverwendbare Skripte und
+Beispiel-Pipelines. Es muss nicht in das Forgejo-Lab gepusht werden und ist
+nicht das Repository, das Woodpecker später als Zielanwendung veröffentlicht.
+
+In Lab 02 wird in Forgejo ein zweites, separates Repository
+`target-application` angelegt. Nur dort liegen der konkrete Anwendungscode,
+das ausgefüllte Lockfile, Chart und Air-Gap-Values sowie die für diese
+Anwendung aktivierten Woodpecker-Pipelines. Die Arbeitskopie wird lokal unter
+`.lab/workspaces/target-application` angelegt; `.lab/` ist bewusst von Git
+ignoriert.
+
 ## Teil A – Lab bootstrap
 
 | Schritt | Ergebnis |

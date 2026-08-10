@@ -2,7 +2,8 @@
 
 **Ziel:** Forgejo läuft als persistente Einzelinstanz im Lab. Am Ende gibt es
 ein Administratorkonto, ein Repository `target-application`, einen
-eingeschränkten Git-Zugriffstoken und einen erfolgreichen Push.
+eingeschränkten Git-Zugriffstoken und einen erfolgreichen Push in eine
+**separate Arbeitskopie der Zielanwendung**.
 
 Für dieses Lernlabor verwenden wir SQLite, eine Replica und den bereits von
 k3d bereitgestellten Traefik Ingress. Das ist leichtgewichtig und für das Lab
@@ -152,7 +153,37 @@ werden:
 unset FORGEJO_ADMIN_PASSWORD
 ```
 
-## 7. Repository anlegen
+## 7. Repository-Grenze verstehen
+
+Ab hier existieren zwei Git-Repositories mit unterschiedlichen Aufgaben:
+
+| Repository | Inhalt | Von Woodpecker gebaut? |
+| --- | --- | --- |
+| `ocm-learning` | dieses Lernprojekt, Bootstrap-Anleitungen und Vorlagen | nein |
+| `target-application` | konkrete Anwendung, Lockfile, Chart, Values und aktive Pipelines | ja |
+
+Das aktuelle Verzeichnis bleibt das Lern-Repository. Füge seinem Git-Checkout
+keinen Forgejo-Remote namens `target-application` hinzu und pushe nicht den
+gesamten Lernpfad in das Anwendungsrepository.
+
+Falls das bereits passiert ist, ist nichts an Forgejo oder Git beschädigt.
+Die saubere Korrektur ist:
+
+1. Benenne das versehentlich befüllte Forgejo-Repository unter
+   **Repository Settings -> Repository Name** in `ocm-learning` um.
+2. Benenne einen eventuell im lokalen Lern-Checkout angelegten Remote um:
+
+   ```bash
+   git remote rename forgejo forgejo-lab
+   ```
+
+3. Lege anschließend wie im nächsten Abschnitt ein neues, leeres Repository
+   `target-application` an.
+
+Der Remote-Schritt wird nur ausgeführt, wenn tatsächlich ein Remote namens
+`forgejo` im Lern-Checkout existiert. Prüfe das vorher mit `git remote -v`.
+
+## 8. Leeres Anwendungsrepository anlegen
 
 In der Forgejo-Oberfläche:
 
@@ -160,8 +191,8 @@ In der Forgejo-Oberfläche:
 2. Owner: `ocm-admin`.
 3. Repository name: `target-application`.
 4. Visibility: für das Lab **Private**.
-5. **Initialize repository** bleibt deaktiviert, weil der vorhandene
-   Projektstand gepusht wird.
+5. **Initialize repository** bleibt deaktiviert. Die minimale Arbeitskopie
+   wird im nächsten Abschnitt kontrolliert aufgebaut.
 6. Bestätige mit **Create Repository**.
 
 Die Ziel-URL lautet danach:
@@ -170,35 +201,40 @@ Die Ziel-URL lautet danach:
 http://forgejo.ocm.test:8080/ocm-admin/target-application.git
 ```
 
-## 8. Projekt pushen und erneut klonen
+## 9. Separate Arbeitskopie initialisieren und pushen
 
-Falls dieses Verzeichnis noch kein Git-Repository ist:
+Die Arbeitskopie der Zielanwendung liegt innerhalb des ignorierten
+`.lab/workspaces`-Verzeichnisses. Die folgenden Befehle werden zunächst im
+Wurzelverzeichnis von `ocm-learning` ausgeführt:
 
 ```bash
-git init -b main
-git add .
-git commit -m 'Initialer OCM-Lernpfad'
+export LAB_REPO_ROOT="$PWD"
+export TARGET_APP_WORKDIR="${LAB_REPO_ROOT}/.lab/workspaces/target-application"
+
+mkdir -p "$(dirname "$TARGET_APP_WORKDIR")"
+git clone \
+  http://forgejo.ocm.test:8080/ocm-admin/target-application.git \
+  "$TARGET_APP_WORKDIR"
+
+mkdir -p "$TARGET_APP_WORKDIR/.woodpecker"
+cp "$LAB_REPO_ROOT/examples/ci/smoke.yaml" \
+  "$TARGET_APP_WORKDIR/.woodpecker/smoke.yaml"
+printf '%s\n' '# Target Application' > "$TARGET_APP_WORKDIR/README.md"
 ```
 
-Remote hinzufügen und pushen:
+Die Warnung, dass ein leeres Repository geklont wurde, ist an dieser Stelle
+erwartet. Committe ausschließlich diese neue Arbeitskopie:
 
 ```bash
-git remote add forgejo \
-  http://forgejo.ocm.test:8080/ocm-admin/target-application.git
-git push -u forgejo main
-```
-
-Existiert ein Remote namens `forgejo` bereits, wird statt `remote add`
-folgender Befehl verwendet:
-
-```bash
-git remote set-url forgejo \
-  http://forgejo.ocm.test:8080/ocm-admin/target-application.git
+git -C "$TARGET_APP_WORKDIR" add README.md .woodpecker/smoke.yaml
+git -C "$TARGET_APP_WORKDIR" commit -m 'Zielanwendung initialisieren'
+git -C "$TARGET_APP_WORKDIR" branch -M main
+git -C "$TARGET_APP_WORKDIR" push -u origin main
 ```
 
 Bei der Anmeldemaske ist der Benutzer `ocm-admin`; als Passwort wird der in
 Schritt 6 erzeugte Zugriffstoken eingegeben. Prüfe danach einen unabhängigen
-Clone außerhalb des Arbeitsverzeichnisses:
+Clone außerhalb beider Arbeitsverzeichnisse:
 
 ```bash
 git clone \
@@ -236,6 +272,8 @@ Häufige Ursachen:
 - `/api/healthz` meldet `pass`.
 - Pod und PVC im Namespace `forgejo` sind `Running` beziehungsweise `Bound`.
 - Das private Repository `ocm-admin/target-application` existiert.
+- Es enthält nur `README.md` und `.woodpecker/smoke.yaml`, nicht den gesamten
+  Lernpfad.
 - `git push` und der unabhängige `git clone` funktionieren mit einem Token.
 
 Danach ist Forgejo als SCM für [Lab 03 – Woodpecker](03-woodpecker.md)

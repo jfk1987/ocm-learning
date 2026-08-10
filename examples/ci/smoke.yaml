@@ -1,3 +1,5 @@
+# Diese Vorlage wird in Lab 02 in das separate Repository der Zielanwendung
+# nach .woodpecker/smoke.yaml kopiert.
 when:
   - event: push
 

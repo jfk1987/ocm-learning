@@ -142,8 +142,10 @@ letzter Test keine Netzwerkfehlermeldung zeigt.
 
 ## 7. Erste Kubernetes-Pipeline auslösen
 
-Dieses Repository enthält `.woodpecker/smoke.yaml`. Der Schritt nutzt bewusst
-das in Lab 01 gepushte Image:
+Die Vorlage `examples/ci/smoke.yaml` aus dem Lern-Repository wurde in Lab 02
+als `.woodpecker/smoke.yaml` in die **separate Arbeitskopie der
+Zielanwendung** kopiert. Der Schritt nutzt bewusst das in Lab 01 gepushte
+Image:
 
 ```yaml
 image: localhost:5000/lab/alpine:3.21
@@ -153,10 +155,21 @@ Damit prüft ein einziger Lauf drei Verbindungen: Forgejo-Webhook zu Woodpecker,
 Woodpecker-Agent zur Kubernetes API und k3s zur lokalen Registry.
 
 ```bash
-git add .woodpecker/smoke.yaml
-git commit -m 'Woodpecker Smoke-Test hinzufügen'
-git push forgejo main
+export LAB_REPO_ROOT="$PWD"
+export TARGET_APP_WORKDIR="${LAB_REPO_ROOT}/.lab/workspaces/target-application"
+test -d "$TARGET_APP_WORKDIR/.git"
+
+printf '%s\n' "Smoke-Test $(date -u +%FT%TZ)" \
+  >> "$TARGET_APP_WORKDIR/README.md"
+git -C "$TARGET_APP_WORKDIR" add README.md
+git -C "$TARGET_APP_WORKDIR" commit -m 'Woodpecker Smoke-Test auslösen'
+git -C "$TARGET_APP_WORKDIR" push origin main
 ```
+
+Die Pipeline selbst wurde bereits mit dem Initial-Commit aus Lab 02 gepusht.
+Die Änderung an `README.md` erzeugt nach ihrer Aktivierung einen neuen
+Webhook-Event. Es wird ausdrücklich nicht aus dem Wurzelverzeichnis von
+`ocm-learning` gepusht.
 
 Beobachte während des Laufs die kurzlebigen Ressourcen:
 

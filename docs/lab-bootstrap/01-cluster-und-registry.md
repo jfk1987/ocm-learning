@@ -161,13 +161,22 @@ Lab stehen.
 ```bash
 docker pull alpine:3.21
 docker tag alpine:3.21 localhost:5000/lab/alpine:3.21
+docker image inspect localhost:5000/lab/alpine:3.21 >/dev/null
 docker push localhost:5000/lab/alpine:3.21
+curl --fail --show-error http://localhost:5000/v2/_catalog
 curl --fail --show-error \
   http://localhost:5000/v2/lab/alpine/tags/list
 ```
 
-Die Tag-Liste muss `3.21` enthalten. Damit ist der Weg
-`Docker auf dem Host -> Registry` abgeschlossen.
+Der Push muss mit einer Digest-Zeile erfolgreich enden. Der Katalog muss danach
+`lab/alpine`, die Tag-Liste `3.21` enthalten. Damit ist der Weg
+`Docker auf dem Host -> Registry` abgeschlossen. Optional bestätigt skopeo
+denselben Inhalt ohne TLS:
+
+```bash
+skopeo list-tags --tls-verify=false \
+  docker://localhost:5000/lab/alpine
+```
 
 ## 6. Pull im Cluster prüfen
 
@@ -237,6 +246,43 @@ Steht in den Events ein Zugriff auf `https://localhost:5000`, wurde der
 Cluster ohne `--registry-config` erzeugt oder die Mirror-Datei ist falsch. Da
 k3s diese Konfiguration beim Bootstrap erhält, wird der Lab-Cluster dann mit
 Schritt 3 neu erzeugt.
+
+## Fehleranalyse: Die Tags-URL liefert `404`
+
+Ein HTTP `404` auf `/v2/lab/alpine/tags/list` bedeutet normalerweise, dass die
+Registry erreichbar ist, aber dort kein Repository namens `lab/alpine`
+existiert. Zeige die Fehlerantwort zunächst ohne `--fail` und frage den
+Registry-Katalog ab:
+
+```bash
+curl --show-error http://localhost:5000/v2/lab/alpine/tags/list
+curl --fail --show-error http://localhost:5000/v2/_catalog
+```
+
+Eine Antwort mit `NAME_UNKNOWN` bestätigt den fehlenden Repository-Namen. Ist
+der Katalog leer oder enthält nur einen früher verwendeten Pfad wie
+`test/alpine`, wiederhole Tag und Push mit der aktuellen Referenz und achte auf
+den Exit-Code:
+
+```bash
+docker image inspect alpine:3.21 >/dev/null
+docker tag alpine:3.21 localhost:5000/lab/alpine:3.21
+docker push localhost:5000/lab/alpine:3.21
+echo "$?"
+```
+
+Nur der Exit-Code `0` bestätigt einen erfolgreichen Push. Bleibt der Katalog
+danach leer, vergleiche Port-Mapping und Registry-Logs:
+
+```bash
+docker ps --filter name=k3d-registry.localhost \
+  --format 'table {{.Names}}\t{{.Ports}}\t{{.Status}}'
+docker logs k3d-registry.localhost --tail=100
+```
+
+Der Container muss Host-Port `127.0.0.1:5000` veröffentlichen. Ein anderer
+Container oder ein anderes Port-Mapping bedeutet, dass Push und curl nicht
+dieselbe Registry ansprechen.
 
 ## Abnahme
 
