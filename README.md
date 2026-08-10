@@ -1,79 +1,74 @@
-# OCM-Lernlabor: Bootstrap, komplexe Anwendung und automatischer Release
+# OCM-Lernlabor: vom leeren Rechner bis zum Air-Gap-Release
 
-Dieses Projekt ist ein vollständiger Lernpfad mit zwei klar getrennten Ebenen:
+Dieses Repository ist ein durchgängiger, praktischer Lernpfad für das
+[Open Component Model](https://ocm.software/). Es setzt keine Erfahrung mit
+OCM, Forgejo oder Woodpecker voraus.
 
-1. ein leichtgewichtiges, internetfähiges Lab mit Cluster, Registry, SCM und CI;
-2. eine komplexe Zielanwendung, die mit OCM so ausgeliefert wird, dass ihr
-   Deployment nur noch die Zielregistry benötigt.
+Das Ergebnis ist eine konkrete Nginx/Redis-Anwendung mit Helm-Chart,
+Init-Container, StatefulSet, Migrations-Hook und Test. Source-Metadaten,
+Source-Archiv, Chart, Values und alle drei Laufzeitimages werden als OCM
+Component Version ausgeliefert,
+signiert, durch ein CTF über eine simulierte Luftspalte transportiert und in
+einem Zielcluster ohne Internet-Egress installiert.
 
 ```text
-┌───────────── Vorbereitungslabor (Internet erlaubt) ──────────────┐
-│ k3d/K3s + OCI Registry + Forgejo + Woodpecker                    │
-└─────────────────────────────┬────────────────────────────────────┘
-                              │ Git-Tag löst Release aus
-                              ▼
-┌──────────── OCM-Anwendungs-Lieferung (vollständig) ──────────────┐
-│ Chart + Values + CRDs/Dateien + Init-/Job-/App-Images + Digests  │
-│           └─ automatischer Constructor → CTF → Registry-Transfer │
-└─────────────────────────────┬────────────────────────────────────┘
-                              ▼
-                 Ziel-Workload ohne externen Registry-Pull
+Internetfähiges Labor                   Air-Gap-Ziel
+┌─────────────────────────────┐        ┌──────────────────────────┐
+│ k3d + Registry             │  CTF   │ k3d ohne Default-Route  │
+│ Forgejo + Woodpecker       ├───────▶│ lokale Registry + Helm   │
+│ OCM Build + Signatur       │        │ Nginx + Redis            │
+└─────────────────────────────┘        └──────────────────────────┘
 ```
 
-Die Plattformdienste dürfen selbst Images aus beliebigen Quellen beziehen.
-Das Ziel ist ausschließlich, **alle Ressourcen der Zielanwendung** in ihrer
-OCI Registry bereitzustellen und sie ohne Internetzugang zu deployen.
+## Der eine verbindliche Pfad
 
-## Zwei Git-Repositories mit unterschiedlichen Aufgaben
+Arbeite die Tabellen von oben nach unten ab. Jedes Kapitel hat ein kleines,
+prüfbares Ergebnis und einen Abnahmeabschnitt.
 
-Dieses Repository `ocm-learning` ist das **Lern- und Bootstrap-Repository**.
-Es enthält die Anleitungen, Lab-Konfigurationen, wiederverwendbare Skripte und
-Beispiel-Pipelines. Es muss nicht in das Forgejo-Lab gepusht werden und ist
-nicht das Repository, das Woodpecker später als Zielanwendung veröffentlicht.
-
-In Lab 02 wird in Forgejo ein zweites, separates Repository
-`target-application` angelegt. Nur dort liegen der konkrete Anwendungscode,
-das ausgefüllte Lockfile, Chart und Air-Gap-Values sowie die für diese
-Anwendung aktivierten Woodpecker-Pipelines. Die Arbeitskopie wird lokal unter
-`.lab/workspaces/target-application` angelegt; `.lab/` ist bewusst von Git
-ignoriert.
-
-## Teil A – Lab bootstrap
+### Teil A – Leichtgewichtiges Labor bootstrappen
 
 | Schritt | Ergebnis |
 | --- | --- |
-| [00 – Voraussetzungen](docs/lab-bootstrap/00-voraussetzungen.md) | lokale Werkzeuge bereit |
-| [01 – Cluster und Registry](docs/lab-bootstrap/01-cluster-und-registry.md) | k3d/K3s und OCI Registry laufen |
-| [02 – Forgejo](docs/lab-bootstrap/02-forgejo.md) | internes SCM bereit |
-| [03 – Woodpecker](docs/lab-bootstrap/03-woodpecker.md) | CI mit Kubernetes-Backend bereit |
+| [Lab 00 – Voraussetzungen](docs/lab-bootstrap/00-voraussetzungen.md) | Docker, k3d, kubectl, Helm, OCM, yq und Skopeo bereit |
+| [Lab 01 – Cluster und Registry](docs/lab-bootstrap/01-cluster-und-registry.md) | k3d/K3s zieht erfolgreich aus der lokalen HTTP-Registry |
+| [Lab 02 – Forgejo](docs/lab-bootstrap/02-forgejo.md) | SCM, Benutzer, Token und separates Anwendungsrepository bereit |
+| [Lab 03 – Woodpecker](docs/lab-bootstrap/03-woodpecker.md) | OAuth, Webhook und erste Kubernetes-CI-Pipeline funktionieren |
 
-## Teil B – Zielanwendung mit OCM
+### Teil B – Vollständige OCM-Lieferung
+
+| Schritt | Praktisch behandelter OCM-Aspekt |
+| --- | --- |
+| [OCM 00 – Anwendung und Modell](docs/application-path/00-grenzen.md) | Component, Version, Source, Resources und Liefergrenze |
+| [OCM 01 – Inventar](docs/application-path/01-inventar.md) | Digests, Plattformen, `extraIdentity`, Lockfile |
+| [OCM 02 – Constructor und CTF](docs/application-path/02-komponente.md) | Inputs, Access, Labels, Descriptor, Resource-Selektion |
+| [OCM 03 – Signatur und Transport](docs/application-path/03-registry-import.md) | RSA-Signatur, Verifikation, CTF-Paket und Schleusenhash |
+| [OCM 04 – Import und Deployment](docs/application-path/04-deploy.md) | rekursiver Transfer, Resource-Lokalisierung, Helm |
+| [OCM 05 – Air-Gap-Nachweis](docs/application-path/05-nachweis.md) | echte Netztrennung, positiver Neustart, negativer Upstream-Pull |
+| [OCM 06 – Update und Rollback](docs/application-path/06-update.md) | getrennte Component Versions und Wiederherstellung |
+
+### Teil C – Aufbau-Labs
 
 | Schritt | Ergebnis |
 | --- | --- |
-| [00 – Grenzen](docs/application-path/00-grenzen.md) | Lieferumfang eindeutig |
-| [01 – Inventar](docs/application-path/01-inventar.md) | Images und Chart fest gelockt |
-| [02 – Komponente](docs/application-path/02-komponente.md) | selbstständiges OCM-CTF gebaut |
-| [03 – Registry](docs/application-path/03-registry-import.md) | Ressourcen lokalisiert |
-| [04 – Deploy](docs/application-path/04-deploy.md) | Workload zieht nur lokal |
-| [05 – Nachweis](docs/application-path/05-nachweis.md) | Air-gap verifiziert |
-| [06 – Update](docs/application-path/06-update.md) | Update und Rollback wiederholbar |
+| [OCM 07 – Credentials](docs/advanced/07-credentials.md) | authentifizierte Registry und Consumer-Identity-Matching |
+| [OCM 08 – Component References](docs/advanced/08-component-references.md) | Produkt aus zwei Komponenten, rekursiver Transfer |
+| [OCM 09 – Resolver](docs/advanced/09-resolvers.md) | deterministische Auflösung verteilter Komponenten |
+| [OCM 10 – Kubernetes Controller](docs/advanced/10-controller.md) | Repository → Component → Resource → Deployer |
 
-## Automatisierung als Abschluss
+### Teil D – Abschlussautomatisierung
 
-Der letzte Schritt ist [Lab 04 – automatischer Release](docs/lab-bootstrap/04-automatischer-release.md):
-Ein Git-Tag löst die OCM-Lieferung aus.
+[Lab 04 – automatischer OCM-Release](docs/lab-bootstrap/04-automatischer-release.md)
+baut ein eigenes CI-Toolimage. Ein Forgejo-Tag löst in Woodpecker die
+Lockfile-Prüfung, Constructor-Erzeugung, CTF-Materialisierung und den
+Registry-Transfer aus.
 
-`config/application.lock.yaml` ist der geprüfte Freigabevertrag. Der finale
-CI-Schritt führt [deliver-application.sh](/Users/jankahnt/Documents/ai/ocm-learning/scripts/deliver-application.sh)
-aus und erledigt in dieser Reihenfolge:
+## Zwei Git-Repositories, zwei Aufgaben
 
-1. Constructor aus dem Lockfile generieren;
-2. alle Images und Dateien in ein selbstständiges CTF materialisieren;
-3. Component Version samt Resources in die Zielregistry transferieren.
-
-Damit bleibt der Component Descriptor ableitbar, überprüfbar und frei von
-manueller YAML-Duplizierung.
+`ocm-learning` enthält Tutorial, Vorlagen, Demo und wiederverwendbare Skripte.
+Es wird **nicht** als Zielanwendung in Forgejo eingecheckt. Lab 02 erzeugt das
+separate Repository `target-application` unter
+`.lab/workspaces/target-application`; nur dieses Repository wird von
+Woodpecker released. OCM 00 füllt es mit der konkreten Anwendung.
 
 ## Start
 
@@ -83,7 +78,6 @@ $EDITOR config/lab.env
 ./scripts/preflight-lab.sh
 ```
 
-Beginne anschließend bei Lab 00. `latest` ist für die Zielanwendung nicht
-zulässig; jede Image-Resource benötigt einen `sha256`-Digest.
-
-Weiterführende Quellen stehen in [docs/references.md](docs/references.md).
+Beginne danach bei Lab 00. Bei Versionsänderungen an OCM oder den Helm-Charts
+prüfe zuerst die [Referenzen](docs/references.md); das Repository pinnt
+Versionen bewusst, damit ein Durchlauf reproduzierbar bleibt.

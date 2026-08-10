@@ -14,8 +14,8 @@ repository=$3
 root_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 component=$(yq -r '.component.name' "$lockfile")
 version=$(yq -r '.component.version' "$lockfile")
-constructor="${workdir}/component-constructor.yaml"
-archive="${workdir}/transport-archive"
+constructor="${workdir}/component-constructor-${version}.yaml"
+archive="${workdir}/transport-archive-${version}"
 
 "${root_dir}/scripts/generate-component-constructor.sh" "$lockfile" "$workdir" "$constructor"
 "${root_dir}/scripts/build-self-contained-ctf.sh" "$constructor" "$workdir" "$component" "$version" "$archive"

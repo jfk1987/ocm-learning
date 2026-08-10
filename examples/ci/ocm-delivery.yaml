@@ -15,6 +15,7 @@ steps:
       - test -f config/application.lock.yaml
       - test -f delivery/target-application/target-application-chart.tgz
       - test -f delivery/target-application/values-airgap.yaml
+      - diff -r app delivery/target-application/source
       - test "$CI_COMMIT_TAG" = "$(yq -r '.component.version' config/application.lock.yaml)"
       - skopeo list-tags --tls-verify=false docker://k3d-registry.localhost:5000/lab/alpine
 

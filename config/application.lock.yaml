@@ -1,27 +1,51 @@
-# Dieses Lockfile ist der Freigabevertrag für EINE Zielanwendung.
-# Es wird in Schritt 01 aus dem gerenderten, fest gepinnten Chart befüllt.
+# Vorlage. Das ausführbare Lockfile wird durch
+# scripts/prepare-target-application.sh im Repository target-application erzeugt.
 schemaVersion: 1
 component:
   name: example.org/team/target-application
   version: 0.1.0
+  provider: example.org
+  labels:
+    - name: purpose
+      value: ocm-learning
+      signing: true
+source:
+  name: application-source
+  type: git
+  version: 0.1.0
+  repository: http://forgejo.ocm.test:8080/ocm-admin/target-application.git
+  ref: refs/tags/0.1.0
 charts:
-  - name: target-application
-    source: REPLACE_WITH_UPSTREAM_CHART_REFERENCE
-    version: TBD
-    digest: TBD
-    # Relativ zum Arbeitsverzeichnis des Release-Builds.
+  - resourceName: helm-chart
+    name: target-application
+    source: local://app
+    version: 0.1.0
+    digest: REPLACE_WITH_SHA256
     path: target-application-chart.tgz
 values:
+  resourceName: deployment-values
   path: values-airgap.yaml
 images:
-  # - name: api
-  #   version: 1.2.3
-  #   imageReference: ghcr.io/example/api:1.2.3@sha256:REPLACE_WITH_64_HEX_DIGEST
-  # - name: database-migration
-  #   version: 1.2.3
-  #   imageReference: ghcr.io/example/migrate:1.2.3@sha256:REPLACE_WITH_64_HEX_DIGEST
+  - name: web-image
+    version: 1.27.4-alpine
+    imageReference: public.ecr.aws/docker/library/nginx:1.27.4-alpine@sha256:REPLACE_WITH_64_HEX_DIGEST
+    platform:
+      os: linux
+      architecture: amd64
+  - name: redis-image
+    version: 7.4.2-alpine
+    imageReference: public.ecr.aws/docker/library/redis:7.4.2-alpine@sha256:REPLACE_WITH_64_HEX_DIGEST
+    platform:
+      os: linux
+      architecture: amd64
+  - name: toolbox-image
+    version: 1.37.0
+    imageReference: public.ecr.aws/docker/library/busybox:1.37.0@sha256:REPLACE_WITH_64_HEX_DIGEST
+    platform:
+      os: linux
+      architecture: amd64
 additionalResources:
-  # - name: database-migration
-  #   type: blob
-  #   inputType: Dir/v1
-  #   path: manifests/migration
+  - name: source-archive
+    type: sourceArchive
+    inputType: Dir/v1
+    path: source

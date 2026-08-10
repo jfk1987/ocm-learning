@@ -1,12 +1,12 @@
 # Builder für den Woodpecker-Release-Job; nicht Teil der Zielanwendung.
-FROM alpine:3.21
+FROM public.ecr.aws/docker/library/alpine:3.21
 
 ARG HELM_VERSION=v3.17.3
 ARG YQ_VERSION=v4.45.1
-ARG OCM_VERSION=0.12
+ARG OCM_VERSION=0.12.0
 ARG TARGETARCH
 
-RUN apk add --no-cache bash ca-certificates curl git skopeo tar \
+RUN apk add --no-cache bash ca-certificates curl git openssl skopeo tar \
     && test -n "${TARGETARCH}" \
     && curl -fsSLo /tmp/helm.tgz "https://get.helm.sh/helm-${HELM_VERSION}-linux-${TARGETARCH}.tar.gz" \
     && tar -xzf /tmp/helm.tgz -C /tmp \

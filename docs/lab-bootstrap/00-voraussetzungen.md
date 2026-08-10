@@ -19,7 +19,7 @@ Unter Linux muss der aktuelle Benutzer Docker ohne `sudo` verwenden können.
 Dieser Test muss erfolgreich sein:
 
 ```bash
-docker run --rm hello-world
+docker run --rm public.ecr.aws/docker/library/hello-world:latest
 ```
 
 ## 2. Kommandozeilenwerkzeuge installieren
@@ -91,7 +91,8 @@ nicht während eines Durchlaufs wechseln.
 ## Abnahme
 
 - `./scripts/preflight-lab.sh` endet mit `Lab-Voraussetzungen erfüllt.`
-- `docker run --rm hello-world` funktioniert ohne `sudo`.
+- `docker run --rm public.ecr.aws/docker/library/hello-world:latest`
+  funktioniert ohne `sudo`.
 - `echo "$LOCAL_REGISTRY"` gibt `localhost:5000` aus.
 
 Erst danach folgt [Lab 01 – Cluster und Registry](01-cluster-und-registry.md).

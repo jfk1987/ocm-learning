@@ -9,7 +9,8 @@ fi
 
 manifest=$1
 registry=$2
-images=$(yq -r '.. | select(has("image")) | .image | select(type == "!!str")' "$manifest" | sort -u)
+images=$(yq -r '.. | select(has("image")) | .image | select(type == "!!str")' "$manifest" |
+  grep -v '^---$' | sort -u)
 [[ -n "$images" ]] || { echo 'Keine Image-Felder gefunden.' >&2; exit 1; }
 
 invalid=0

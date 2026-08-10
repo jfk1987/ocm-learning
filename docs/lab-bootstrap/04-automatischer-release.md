@@ -73,24 +73,23 @@ Lab 04 verwendet zwei Verzeichnisse mit verschiedenen Aufgaben:
 | `$LAB_REPO_ROOT` | nein; liefert Vorlagen und die Dockerfile | nein |
 | `$TARGET_APP_WORKDIR` | ja; enthält Anwendung und aktive Pipeline | ja |
 
-Die Release-Skripte werden einmalig aus dem Lern-Repository in das
-Anwendungsrepository kopiert:
+OCM 00 hat die Anwendung und Release-Skripte bereits kontrolliert aus dem
+Lern-Repository erzeugt. Die folgenden Befehle sind daher eine Prüfung, kein
+zweiter Bootstrap:
 
 ```bash
-mkdir -p \
-  "$TARGET_APP_WORKDIR/config" \
-  "$TARGET_APP_WORKDIR/delivery/target-application" \
-  "$TARGET_APP_WORKDIR/scripts" \
-  "$TARGET_APP_WORKDIR/.woodpecker"
-
-cp "$LAB_REPO_ROOT/scripts/generate-component-constructor.sh" \
-  "$LAB_REPO_ROOT/scripts/build-self-contained-ctf.sh" \
-  "$LAB_REPO_ROOT/scripts/import-self-contained-ctf.sh" \
-  "$LAB_REPO_ROOT/scripts/deliver-application.sh" \
-  "$TARGET_APP_WORKDIR/scripts/"
-
-cp "$LAB_REPO_ROOT/examples/ci/ocm-delivery.yaml" \
-  "$TARGET_APP_WORKDIR/.woodpecker/ocm-delivery.yaml"
+for file in \
+  scripts/validate-application-lock.sh \
+  scripts/generate-component-constructor.sh \
+  scripts/build-self-contained-ctf.sh \
+  scripts/import-self-contained-ctf.sh \
+  scripts/deliver-application.sh \
+  .woodpecker/ocm-delivery.yaml; do
+  test -f "$TARGET_APP_WORKDIR/$file" || {
+    echo "Fehlt: $file – zuerst OCM 00 ausführen" >&2
+    false
+  }
+done
 ```
 
 **Zwischenergebnis:** `git -C "$TARGET_APP_WORKDIR" status --short` zeigt nur
@@ -241,7 +240,8 @@ steps:
 - `commands` werden im automatisch geklonten Repository ausgeführt.
 - `environment` setzt normale Umgebungsvariablen im Schritt.
 
-Der erste Schritt prüft Werkzeuge, Eingabedateien, Registry-Zugriff und dass
+Der erste Schritt prüft Werkzeuge, Eingabedateien, die Bytegleichheit von
+`app/` und der gepackten Source-Kopie, Registry-Zugriff und dass
 `CI_COMMIT_TAG` exakt der `component.version` im Lockfile entspricht. Der
 zweite Schritt führt erst danach die eigentliche OCM-Lieferung aus.
 
@@ -307,6 +307,8 @@ Für dieses Lab wird ein Tag ohne vorangestelltes `v` verwendet, zum Beispiel
 
 ```bash
 git -C "$TARGET_APP_WORKDIR" add \
+  .gitignore \
+  app \
   config \
   delivery \
   scripts \
@@ -428,8 +430,8 @@ und erzeuge eine neue Component Version mit einem neuen Tag.
 
 Die Release-Skripte überschreiben keine Component-Ausgabe. In einem normalen
 Woodpecker-Lauf ist der Checkout frisch. Tritt der Fehler trotzdem auf, wurden
-`component-constructor.yaml`, `transport-archive` oder
-`transport-archive.descriptor-source` versehentlich ins Git-Repository
+`component-constructor-<version>.yaml`, `transport-archive-<version>` oder
+`transport-archive-<version>.descriptor-source` versehentlich ins Git-Repository
 committed. Entferne diese generierten Dateien aus Git und ergänze sie in
 `.gitignore`.
 

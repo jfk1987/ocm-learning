@@ -159,8 +159,9 @@ Lab stehen.
 ## 5. Push vom Host prüfen
 
 ```bash
-docker pull alpine:3.21
-docker tag alpine:3.21 localhost:5000/lab/alpine:3.21
+docker pull public.ecr.aws/docker/library/alpine:3.21
+docker tag public.ecr.aws/docker/library/alpine:3.21 \
+  localhost:5000/lab/alpine:3.21
 docker image inspect localhost:5000/lab/alpine:3.21 >/dev/null
 docker push localhost:5000/lab/alpine:3.21
 curl --fail --show-error http://localhost:5000/v2/_catalog
@@ -265,8 +266,9 @@ der Katalog leer oder enthält nur einen früher verwendeten Pfad wie
 den Exit-Code:
 
 ```bash
-docker image inspect alpine:3.21 >/dev/null
-docker tag alpine:3.21 localhost:5000/lab/alpine:3.21
+docker image inspect public.ecr.aws/docker/library/alpine:3.21 >/dev/null
+docker tag public.ecr.aws/docker/library/alpine:3.21 \
+  localhost:5000/lab/alpine:3.21
 docker push localhost:5000/lab/alpine:3.21
 echo "$?"
 ```

@@ -7,7 +7,8 @@ Registry als vollständiges Vorbereitungslabor bereit.
 Verwendet wird das gepinnte Woodpecker Chart `3.6.5` mit Woodpecker `3.16.0`.
 Server und Agent laufen jeweils einmal; SQLite liegt auf einer 2-GiB-PVC. Die
 Pipeline-Pods bleiben im Lab im Namespace `woodpecker`, damit die vom Chart
-erzeugte namespaced Role exakt passt.
+erzeugte namespaced Role exakt passt. Das Workspace-PVC ist 8 GiB groß, weil
+der Abschlusslauf ein CTF mit allen Image-Layern materialisiert.
 
 ## 1. Gemeinsame Erreichbarkeit prüfen
 
@@ -94,7 +95,7 @@ Die Lab-Values konfigurieren:
 - Forgejo unter `http://forgejo.ocm.test:8080`;
 - Woodpeckers öffentliche URL `http://woodpecker.ocm.test:8080`;
 - genau einen Kubernetes-Agenten und höchstens einen parallelen Workflow;
-- kurzlebige 2-GiB-RWO-Volumes für Pipeline-Workspaces;
+- kurzlebige 8-GiB-RWO-Volumes für Pipeline-Workspaces;
 - den vorhandenen Forgejo-Benutzer `ocm-admin` als Woodpecker-Admin;
 - einen Ingress über den mit k3d gelieferten Traefik.
 

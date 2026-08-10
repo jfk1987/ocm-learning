@@ -13,5 +13,5 @@ version=$3
 repository=$4
 [[ -d "$archive" ]] || { echo "CTF fehlt: $archive" >&2; exit 1; }
 
-ocm transfer component-version "ctf::${archive}//${component}:${version}" "oci::${repository}" --copy-resources --upload-as ociArtifact
+ocm transfer component-version "ctf::${archive}//${component}:${version}" "oci::${repository}" --recursive --copy-resources --upload-as ociArtifact
 ocm get component-version "oci::${repository}//${component}:${version}"

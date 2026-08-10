@@ -1,50 +1,48 @@
-# Architektur und Begriffe
+# Architektur und Vertrauensgrenzen
 
-## Zwei Vertrauenszonen
-
-Die Connected Station darf nur zum Beschaffen, Prüfen und Paketieren verwendet
-werden. Der Cluster bekommt niemals Zugang zu öffentlichen Registries. Die
-Offline-Zone vertraut ausschließlich dem importierten Paket und ihrer lokalen
-OCI Registry.
+## Drei Umgebungen mit klaren Aufgaben
 
 ```text
-┌──────────────── connected ────────────────┐       ┌──────────── offline ────────────┐
-│ JFrog Chart + Image-Digests                │       │ lokale OCI Registry             │
-│             │                              │ CTF   │   │                              │
-│             ▼                              │──────►│   ▼                              │
-│ OCM component-constructor.yaml             │       │ OCM transfer --copy-resources   │
-│             │                              │       │   │                              │
-│             ▼                              │       │   ▼                              │
-│ Common Transport Format (CTF)               │       │ Helm chart + lokale Image-Refs  │
-└────────────────────────────────────────────┘       └─────────────────────────────────┘
+┌───────────── Connected Station / Lab ─────────────┐
+│ Forgejo → Woodpecker → Constructor → CTF       │
+│                 Source + Chart + Values + Images │
+│                              ↓ signieren        │
+└──────────────────────────────┬──────────────────┘
+                               │ CTF.tgz + SHA-256
+                               │ + Signatur/Public Key
+                         kontrollierte Schleuse
+                               │
+┌──────────────────────────────▼──────────────────┐
+│ Zielseite: Hash/Signatur → OCM Import → Registry │
+│                                      ↓             │
+│ k3d-Node ohne Default-Route ← Helm + lokale Values │
+└─────────────────────────────────────────────────┘
 ```
 
-## Was OCM hier sicherstellt
+Das Bootstrap-Lab darf externe Images und Charts beziehen. Die Air-Gap-
+Eigenschaft gilt für die Zielanwendung im separaten Zielcluster. Seine
+Default-Route wird erst entfernt, nachdem K3s selbst bereit ist.
 
-Eine OCM-Komponentenversion ist ein unveränderlicher, versionierter Vertrag.
-Sie enthält die Ressourcen (Chart, Images, Values/Manifeste) und deren Zugriffe.
-Beim Transfer mit `--copy-resources` werden die referenzierten Ressourcen in
-das Ziel kopiert und der Descriptor auf die Zielorte lokalisiert. Dadurch kann
-der Import kontrolliert, wiederholt und auditiert werden.
+## Verantwortlichkeiten
 
-OCM ersetzt nicht Kubernetes, Helm oder die Registry:
-
-| Werkzeug | Aufgabe |
+| Werkzeug | Verantwortung |
 | --- | --- |
-| OCM | Lieferumfang beschreiben, signieren, prüfen, transportieren |
-| CTF | portabler Offline-Container für eine OCM-Komponente |
-| lokale OCI Registry | dauerhafte Quelle für Images und OCM-Artefakte |
-| Helm | Artifactory-Kubernetes-Ressourcen rendern und installieren |
-| Kubernetes | Workloads aus der lokalen Registry ausführen |
+| Lockfile | menschlich geprüfter Freigabevertrag mit Versionen und Digests |
+| OCM | Identität, Herkunft, Digests, Signatur, Transfer und Lokalisierung |
+| CTF | portabler Transport von Descriptors und materialisierten Resources |
+| OCI Registry | dauerhafte Zielzugriffe für OCM und Container Runtime |
+| Helm | Rendern und Anwenden der aus OCM extrahierten Anwendung |
+| Kubernetes | Ausführung der ausschließlich lokalen Images |
 
-## Bootstrap-Grenze
+`--copy-resources` und `--recursive` sind orthogonal: Die erste Option kopiert
+die Resource-Inhalte einer Version, die zweite folgt Component References zu
+weiteren Versionen.
 
-Ein OCM Controller im Cluster wäre selbst ein weiterer Workload mit Images und
-CRDs. Dieser Lernpfad startet daher absichtlich *ohne* Controller: Die
-Build-/Import-Station führt OCM aus und Helm installiert das bereits
-lokalisierte Chart. Das reduziert den ersten Bootstrapping-Zyklus.
+## Controller-Grenze
 
-Nach Schritt 06 kann derselbe Mechanismus für einen OCM Controller, Flux und
-weitere Plattform-Komponenten wiederholt werden. Erst wenn deren Images,
-Charts, CRDs und Konfiguration ebenfalls als OCM-Lieferung vorliegen, ist ein
-vollständiges In-Cluster-GitOps-Modell air-gapped.
+Der Kernpfad braucht keinen In-Cluster-Controller. Das vermeidet einen
+Bootstrap-Zirkel: Auch Controller, CRDs und deren Images müssten sonst vor dem
+ersten Deployment offline bereitstehen. OCM 10 zeigt den Controller deshalb
+als getrenntes, internetfähiges Aufbau-Lab. Für ein produktives Air-Gap-GitOps-
+System werden seine Chart-, CRD- und Image-Ressourcen anschließend mit demselben
+OCM-Muster paketiert.

@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "target-application.name" . }}-nginx
+  labels:
+    {{- include "target-application.labels" . | nindent 4 }}
+data:
+  default.conf: |
+    server {
+      listen 8080;
+      location / {
+        default_type text/plain;
+        return 200 "OCM target application is running\n";
+      }
+      location /healthz {
+        access_log off;
+        return 200 "ok\n";
+      }
+    }
+

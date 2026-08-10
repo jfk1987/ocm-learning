@@ -1,0 +1,36 @@
+components:
+  - name: example.org/ocm-learning/backend
+    version: 1.0.0
+    provider:
+      name: example.org
+    labels:
+      - name: purpose
+        value: component-reference-lab
+        signing: true
+    resources:
+      - name: backend-config
+        type: blob
+        version: 1.0.0
+        input:
+          type: File/v1
+          path: ./backend-config.txt
+          mediaType: text/plain
+
+  - name: example.org/ocm-learning/product
+    version: 1.0.0
+    provider:
+      name: example.org
+    componentReferences:
+      - name: backend
+        componentName: example.org/ocm-learning/backend
+        version: 1.0.0
+    resources:
+      - name: frontend-config
+        type: blob
+        version: 1.0.0
+        extraIdentity:
+          environment: lab
+        input:
+          type: File/v1
+          path: ./frontend-config.txt
+          mediaType: text/plain

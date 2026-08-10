@@ -1,0 +1,13 @@
+components:
+  - name: example.org/ocm-learning/controller-demo
+    version: 1.0.0
+    provider:
+      name: example.org
+    resources:
+      - name: deployment-resource
+        type: blob
+        version: 1.0.0
+        input:
+          type: File/v1
+          path: ./deployment.yaml
+          mediaType: application/yaml

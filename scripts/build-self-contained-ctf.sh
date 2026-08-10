@@ -13,17 +13,22 @@ working_dir=$2
 component=$3
 version=$4
 target=$5
-source="${target}.descriptor-source"
 
 [[ -f "$constructor" ]] || { echo "Constructor fehlt: $constructor" >&2; exit 1; }
 [[ -d "$working_dir" ]] || { echo "Arbeitsverzeichnis fehlt: $working_dir" >&2; exit 1; }
+constructor=$(cd "$(dirname "$constructor")" && pwd)/$(basename "$constructor")
+working_dir=$(cd "$working_dir" && pwd)
+mkdir -p "$(dirname "$target")"
+target=$(cd "$(dirname "$target")" && pwd)/$(basename "$target")
+source="${target}.descriptor-source"
 if [[ -e "$source" || -e "$target" ]]; then
   echo "Ziel existiert bereits. Bitte einen neuen, leeren Ausgabepfad wählen: $target" >&2
   exit 1
 fi
 
-ocm add component-version --repository "ctf::${source}" --constructor "$constructor" --working-directory "$working_dir"
-ocm transfer component-version "ctf::${source}//${component}:${version}" "ctf::${target}" --copy-resources --upload-as localBlob
+(cd "$working_dir" && ocm add component-version \
+  --repository "ctf::${source}" --constructor "$constructor")
+ocm transfer component-version "ctf::${source}//${component}:${version}" "ctf::${target}" --recursive --copy-resources --upload-as localBlob
 ocm get component-version "ctf::${target}//${component}:${version}"
 
 echo "Selbstständiges CTF erstellt: ${target}"

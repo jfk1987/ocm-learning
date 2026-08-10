@@ -26,15 +26,29 @@
   Repository-Secrets und die Einbindung mit `from_secret`.
 - [OCM: How OCM Works](https://ocm.software/docs/overview/how-ocm-works/) –
   Komponente, Packaging, Signierung und CTF für Offline-Transfers.
+- [OCM: Component Identity](https://ocm.software/docs/concepts/component-identity/) –
+  Namen, Versionen, Resources, Sources, References, Labels und `extraIdentity`.
 - [OCM: Create Component Versions](https://ocm.software/docs/getting-started/create-component-versions/) –
   `component-constructor.yaml`, CTF und `ocm add component-version`.
+- [OCM: Input and Access Types](https://ocm.software/docs/reference/input-and-access-types/) –
+  `File/v1`, `Dir/v1`, `Helm/v1`, `OCIImage/v1` und resultierende Zugriffe.
 - [OCM: Transfer and Transport](https://ocm.software/docs/concepts/transfer-and-transport/) –
   Verhalten von `--copy-resources` und Lokalisierung.
+- [OCM: Transfer across an Air Gap](https://ocm.software/docs/how-to/transfer-components-across-an-air-gap/) –
+  CTF als physischer Zonentransport und Import in ein OCI Repository.
 - [OCM CLI: transfer component-version](https://ocm.software/docs/reference/ocm-cli/ocm-transfer-component-version/) –
   aktuelle Transfer-Optionen.
 - [OCM: OCI verwenden](https://ocm.software/docs/tutorials/working-with-oci/) –
   OCI Registry als Ziel und `http://` für lokale Registries ohne TLS.
-- [JFrog Artifactory OSS Helm Chart](https://artifacthub.io/packages/helm/jfrog/artifactory-oss) –
-  Chart, optionale PostgreSQL- und Nginx-Komponenten sowie enthaltene Images.
-- [JFrog Docker-Installation](https://docs.jfrog.com/installation/docs/docker) –
-  offizieller Image-Pfad `releases-docker.jfrog.io/jfrog/artifactory-oss`.
+- [OCM: Plain Signatures](https://ocm.software/docs/tutorials/signing/plain-signatures/) –
+  RSA-Schlüssel, Signing-Config, `ocm sign` und `ocm verify`.
+- [OCM: Credential Resolution](https://ocm.software/docs/tutorials/understand-credential-resolution/) –
+  Consumer Identities, Pfad-Patterns sowie Schema-/Port-Matching.
+- [OCM: Multi-Component Product](https://ocm.software/docs/tutorials/create-a-multi-component-product/) –
+  Component References und rekursive Produktlieferung.
+- [OCM: Resolver Configuration](https://ocm.software/docs/reference/resolver-configuration/) –
+  deterministische Repositories nach Name und Version.
+- [OCM: Kubernetes Controllers](https://ocm.software/docs/concepts/kubernetes-controllers/) –
+  Repository-, Component-, Resource- und Deployer-Reconciliation.
+- [OCM: Deploy Manifests with Deployer](https://ocm.software/docs/how-to/deploy-manifests-with-deployer/) –
+  Raw-Manifeste ohne kro/Flux sowie ApplySet-Lifecycle.

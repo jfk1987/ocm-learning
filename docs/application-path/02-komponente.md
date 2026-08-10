@@ -1,36 +1,80 @@
-# 02 – OCM-Komponente und selbstständiges CTF bauen
+# OCM 02 – Constructor, Descriptor und selbstständiges CTF
 
-**Ziel:** Die Anwendung und alle Laufzeitressourcen reisen als eine überprüfbare
-Komponentenversion.
+**Ziel:** Du erzeugst die erste Component Version, inspizierst ihre
+Modellobjekte und materialisierst alle externen Images in ein CTF.
 
-Lege Chart und Values mit den im Lockfile angegebenen Dateinamen in
-`$DELIVERY_DIR` ab. Das Lockfile enthält für jedes Image `name`, `version` und
-`imageReference` inklusive Digest. Der Constructor wird daraus generiert –
-nicht manuell gepflegt:
+## 1. Constructor generieren
 
 ```bash
-component_name=$(yq -r '.component.name' config/application.lock.yaml)
-component_version=$(yq -r '.component.version' config/application.lock.yaml)
-./scripts/generate-component-constructor.sh \
-  config/application.lock.yaml "$DELIVERY_DIR" \
-  "$DELIVERY_DIR/component-constructor.yaml"
-./scripts/build-self-contained-ctf.sh \
-  "$DELIVERY_DIR/component-constructor.yaml" "$DELIVERY_DIR" \
-  "$component_name" "$component_version" \
-  "$DELIVERY_DIR/transport-archive"
+export TARGET_APP_WORKDIR="$PWD/.lab/workspaces/target-application"
+export DELIVERY_DIR="$TARGET_APP_WORKDIR/delivery/target-application"
+export COMPONENT_NAME="$(yq -r '.component.name' "$TARGET_APP_WORKDIR/config/application.lock.yaml")"
+export COMPONENT_VERSION="$(yq -r '.component.version' "$TARGET_APP_WORKDIR/config/application.lock.yaml")"
+
+"$TARGET_APP_WORKDIR/scripts/generate-component-constructor.sh" \
+  "$TARGET_APP_WORKDIR/config/application.lock.yaml" "$DELIVERY_DIR" \
+  "$DELIVERY_DIR/component-constructor-$COMPONENT_VERSION.yaml"
+yq '.' "$DELIVERY_DIR/component-constructor-$COMPONENT_VERSION.yaml"
 ```
 
-Das Script erstellt zunächst einen Descriptor und transferiert ihn anschließend
-mit `--copy-resources` in ein finales CTF. In diesem zweiten Schritt lädt OCM
-alle gelockten OCI-Images herunter und legt sie als lokale Ressourcen ab. Nur
-das finale CTF darf die Luftspalte passieren.
+Suche darin nacheinander `labels`, `sources`, `resources`, `extraIdentity`,
+`input` und `access`. `input` sagt dem Erzeuger, woher Daten kommen. Im fertigen
+Descriptor beschreibt `access`, wo OCM sie findet.
 
-Optional wird die Component Version jetzt mit einem organisationsweiten
-Schlüssel signiert. Öffentlicher Schlüssel, Signatur und CTF müssen gemeinsam
-in die Zielzone gelangen.
+## 2. Zunächst den Descriptor-CTF bauen
+
+Das Build-Skript erzeugt intern zwei CTFs. Der erste kann noch externe
+Image-Zugriffe enthalten. Der zweite wird mit `--copy-resources` und
+`--upload-as localBlob` selbstständig:
+
+```bash
+"$TARGET_APP_WORKDIR/scripts/build-self-contained-ctf.sh" \
+  "$DELIVERY_DIR/component-constructor-$COMPONENT_VERSION.yaml" "$DELIVERY_DIR" \
+  "$COMPONENT_NAME" "$COMPONENT_VERSION" \
+  "$DELIVERY_DIR/transport-archive-$COMPONENT_VERSION"
+```
+
+Dieser Schritt benötigt auf der Connected Station Internetzugang und kann beim
+ersten Mal einige Minuten dauern, weil alle Image-Layer geladen werden.
+
+## 3. Component Descriptor inspizieren
+
+```bash
+ocm get component-version \
+  "ctf::$DELIVERY_DIR/transport-archive-$COMPONENT_VERSION//$COMPONENT_NAME:$COMPONENT_VERSION"
+ocm get component-version \
+  "ctf::$DELIVERY_DIR/transport-archive-$COMPONENT_VERSION//$COMPONENT_NAME:$COMPONENT_VERSION" \
+  -o yaml > "$DELIVERY_DIR/component.yaml"
+
+yq '.[0].component.sources' "$DELIVERY_DIR/component.yaml"
+yq '.[0].component.resources[] | {name, version, extraIdentity, access, digest}' \
+  "$DELIVERY_DIR/component.yaml"
+```
+
+Bei jeder Resource muss ein Digest vorhanden sein. Die Git-Source bleibt eine
+Herkunftsreferenz; `source-archive` ist ihre transportierte Momentaufnahme. Die
+Image-Resources dürfen
+im finalen CTF nicht mehr nur auf Docker Hub verweisen. OCM hat sie als lokale
+Blobs materialisiert.
+
+## 4. Resource-Selektion praktisch ausprobieren
+
+OCM selektiert Resources über Identitäten, nicht über ihre Dateiposition:
+
+```bash
+mkdir -p "$DELIVERY_DIR/inspect"
+ocm download resource \
+  "ctf::$DELIVERY_DIR/transport-archive-$COMPONENT_VERSION//$COMPONENT_NAME:$COMPONENT_VERSION" \
+  --identity name=deployment-values \
+  --output "$DELIVERY_DIR/inspect/values.yaml" \
+  --extraction-policy disable
+diff -u "$DELIVERY_DIR/values-airgap.yaml" "$DELIVERY_DIR/inspect/values.yaml"
+```
 
 ## Abnahme
 
-`ocm get component-version ctf::<ctf>//<name>:<version>` zeigt Chart, Values
-und jedes gelockte Image. Das CTF kann ohne Zugriff auf Upstream-Registries
-weitergegeben werden.
+Der Descriptor enthält eine Source, sechs Resources, Labels, Digests und
+OS/Arch-`extraIdentity` an allen drei Images. Die heruntergeladenen Values sind
+bytegleich mit der Eingabe.
+
+Weiter mit [OCM 03 – Signieren und transportieren](03-registry-import.md).

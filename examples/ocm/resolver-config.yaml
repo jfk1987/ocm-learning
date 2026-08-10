@@ -1,0 +1,9 @@
+type: generic.config.ocm.software/v1
+configurations:
+  - type: resolvers.config.ocm.software/v1alpha1
+    resolvers:
+      - repository:
+          type: CommonTransportFormat/v1
+          filePath: REPLACE_WITH_ABSOLUTE_CTF_PATH
+        componentNamePattern: "example.org/ocm-learning/*"
+        versionConstraint: ">=1.0.0 <2.0.0"

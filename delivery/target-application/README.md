@@ -9,6 +9,7 @@ Release liegen hier mindestens:
 - optionale Verzeichnisse für CRDs, Migrationsmanifeste oder Konfigurations-
   Dateien, die im Lockfile als `additionalResources` stehen.
 
-Der CI-Release erzeugt hier nur temporär `component-constructor.yaml` und
-`transport-archive/`. Diese Dateien sind ignoriert und dürfen nicht committed
+Der CI-Release erzeugt hier nur temporär
+`component-constructor-<version>.yaml` und
+`transport-archive-<version>/`. Diese Dateien sind ignoriert und dürfen nicht committed
 werden.
