@@ -1,25 +1,31 @@
-# In .woodpecker/ocm-delivery.yaml des Forgejo-Repository ablegen.
-# Das CI-Image muss ocm, helm, yq, skopeo und die Shell-Skripte dieses Projekts
-# enthalten. Es darf aus einer öffentlichen Registry kommen: Es ist Teil des
-# Lab-Bootstraps, nicht der air-gapped Zielanwendung.
+# Diese Datei als .woodpecker/ocm-delivery.yaml in target-application ablegen.
+# Das Toolimage wird in Lab 04 gebaut und in die lokale Registry gepusht.
 when:
   - event: tag
 
 steps:
-  deliver-ocm-component:
-    image: REPLACE_WITH_PUBLISHED_ocm-delivery_IMAGE
+  - name: release-eingaben-pruefen
+    image: localhost:5000/lab/ocm-delivery:0.1.0
+    pull: true
+    commands:
+      - ocm version
+      - helm version --short
+      - yq --version
+      - skopeo --version
+      - test -f config/application.lock.yaml
+      - test -f delivery/target-application/target-application-chart.tgz
+      - test -f delivery/target-application/values-airgap.yaml
+      - test "$CI_COMMIT_TAG" = "$(yq -r '.component.version' config/application.lock.yaml)"
+      - skopeo list-tags --tls-verify=false docker://k3d-registry.localhost:5000/lab/alpine
+
+  - name: ocm-komponente-liefern
+    image: localhost:5000/lab/ocm-delivery:0.1.0
+    pull: true
     environment:
       DELIVERY_DIR: delivery/target-application
-      OCM_REPOSITORY:
-        from_secret: target_ocm_repository
-      TARGET_REGISTRY_HOST:
-        from_secret: target_registry_host
-      REGISTRY_USERNAME:
-        from_secret: target_registry_username
-      REGISTRY_PASSWORD:
-        from_secret: target_registry_password
+      # Aus einem Pipeline-Pod ist localhost der Pod selbst. Die k3d-Registry
+      # ist über ihren Containernamen erreichbar. http:// verhindert, dass OCM
+      # gegen die bewusst TLS-lose Lab-Registry HTTPS verwendet.
+      OCM_REPOSITORY: http://k3d-registry.localhost:5000/ocm
     commands:
-      - test -n "$OCM_REPOSITORY"
-      - mkdir -p "$HOME/.docker"
-      - skopeo login --authfile "$HOME/.docker/config.json" --username "$REGISTRY_USERNAME" --password "$REGISTRY_PASSWORD" "$TARGET_REGISTRY_HOST"
       - ./scripts/deliver-application.sh config/application.lock.yaml "$DELIVERY_DIR" "$OCM_REPOSITORY"

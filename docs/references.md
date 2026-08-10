@@ -18,6 +18,12 @@
   Ausführung von Pipeline-Schritten als Pods und Pull Secrets.
 - [Woodpecker: Forgejo-Anbindung](https://woodpecker-ci.org/docs/administration/configuration/forges/forgejo) –
   OAuth- und Webhook-Konfiguration.
+- [Woodpecker: Workflow-Syntax](https://woodpecker-ci.org/docs/usage/workflow-syntax) –
+  `when`, Schritte, Images, Commands und Ausführungsreihenfolge.
+- [Woodpecker: Umgebungsvariablen](https://woodpecker-ci.org/docs/usage/environment) –
+  unter anderem `CI_COMMIT_TAG` für tag-basierte Releases.
+- [Woodpecker: Secrets](https://woodpecker-ci.org/docs/usage/secrets) –
+  Repository-Secrets und die Einbindung mit `from_secret`.
 - [OCM: How OCM Works](https://ocm.software/docs/overview/how-ocm-works/) –
   Komponente, Packaging, Signierung und CTF für Offline-Transfers.
 - [OCM: Create Component Versions](https://ocm.software/docs/getting-started/create-component-versions/) –
@@ -26,6 +32,8 @@
   Verhalten von `--copy-resources` und Lokalisierung.
 - [OCM CLI: transfer component-version](https://ocm.software/docs/reference/ocm-cli/ocm-transfer-component-version/) –
   aktuelle Transfer-Optionen.
+- [OCM: OCI verwenden](https://ocm.software/docs/tutorials/working-with-oci/) –
+  OCI Registry als Ziel und `http://` für lokale Registries ohne TLS.
 - [JFrog Artifactory OSS Helm Chart](https://artifacthub.io/packages/helm/jfrog/artifactory-oss) –
   Chart, optionale PostgreSQL- und Nginx-Komponenten sowie enthaltene Images.
 - [JFrog Docker-Installation](https://docs.jfrog.com/installation/docs/docker) –
