@@ -10,3 +10,4 @@ config/lab.env
 /delivery/**/inspect/
 /delivery/**/export/
 /delivery/**/deploy-*/
+/site/

@@ -1,0 +1,85 @@
+site_name: OCM Learning Lab
+site_description: From an empty workstation to an air-gapped OCM release
+site_url: https://jfk1987.github.io/ocm-learning/de/
+docs_dir: docs
+site_dir: site/de
+
+theme:
+  name: material
+  custom_dir: overrides
+  language: de
+  features:
+    - navigation.instant
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Systemfarbe verwenden
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Dunkles Farbschema verwenden
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Helles Farbschema verwenden
+
+extra:
+  alternate:
+    - name: Deutsch
+      link: https://jfk1987.github.io/ocm-learning/de/
+      lang: de
+    - name: English
+      link: https://jfk1987.github.io/ocm-learning/en/
+      lang: en
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/jfk1987/ocm-learning
+
+plugins:
+  - search:
+      lang: de
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+
+nav:
+  - Start: index.md
+  - Architektur: architecture.md
+  - Labor bootstrappen:
+      - Lab 00 – Voraussetzungen: lab-bootstrap/00-voraussetzungen.md
+      - Lab 01 – Cluster und Registry: lab-bootstrap/01-cluster-und-registry.md
+      - Lab 02 – Forgejo: lab-bootstrap/02-forgejo.md
+      - Lab 03 – Woodpecker: lab-bootstrap/03-woodpecker.md
+      - Lab 04 – Automatischer Release: lab-bootstrap/04-automatischer-release.md
+  - OCM-Lieferpfad:
+      - OCM 00 – Grenzen und Modell: application-path/00-grenzen.md
+      - OCM 01 – Inventar: application-path/01-inventar.md
+      - OCM 02 – Component und CTF: application-path/02-komponente.md
+      - OCM 03 – Signatur und Transport: application-path/03-registry-import.md
+      - OCM 04 – Air-Gap-Deployment: application-path/04-deploy.md
+      - OCM 05 – Air-Gap-Nachweis: application-path/05-nachweis.md
+      - OCM 06 – Update und Rollback: application-path/06-update.md
+  - Fortgeschrittene Labs:
+      - OCM 07 – Credentials: advanced/07-credentials.md
+      - OCM 08 – Component References: advanced/08-component-references.md
+      - OCM 09 – Resolver: advanced/09-resolvers.md
+      - OCM 10 – Kubernetes Controller: advanced/10-controller.md
+  - Referenzen: references.md
