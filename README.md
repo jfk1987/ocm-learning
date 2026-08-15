@@ -14,11 +14,11 @@ CTF, and installed in a target cluster without Internet egress.
 
 ```text
 Connected lab                         Air-gap target
-┌─────────────────────────────┐       ┌──────────────────────────┐
+┌─────────────────────────────┐       ┌───────────────────────────┐
 │ k3d + registry              │  CTF  │ k3d without default route │
 │ Forgejo + Woodpecker        ├──────▶│ local registry + Helm     │
 │ OCM build + signature       │       │ Nginx + Redis             │
-└─────────────────────────────┘       └──────────────────────────┘
+└─────────────────────────────┘       └───────────────────────────┘
 ```
 
 ## The prescribed learning path
