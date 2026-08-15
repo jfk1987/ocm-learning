@@ -13,8 +13,8 @@ CTF, and installed in a target cluster without Internet egress.
 The complete documentation is available on
 [GitHub Pages](https://jfk1987.github.io/ocm-learning/) with a German/English
 language switch. The source for the English documentation is in
-[`docs-en/`](docs-en/); the [German README](README.md) remains the repository
-default.
+[`docs-en/`](docs-en/); this file is kept as an explicit English README copy,
+while [README.md](README.md) is the repository default.
 
 ## The prescribed learning path
 
