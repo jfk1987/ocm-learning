@@ -1,5 +1,7 @@
 # OCM-Lernlabor: vom leeren Rechner bis zum Air-Gap-Release
 
+[English README](README.en.md) · [Dokumentation auf GitHub Pages](https://jfk1987.github.io/ocm-learning/)
+
 Dieses Repository ist ein durchgängiger, praktischer Lernpfad für das
 [Open Component Model](https://ocm.software/). Es setzt keine Erfahrung mit
 OCM, Forgejo oder Woodpecker voraus.
