@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Paketiert den aktuellen Chart-Quellstand als neue Component/Chart-Version.
-# Image-Upgrades bleiben eine bewusste, separate Lockfile-Änderung.
+# Packages the current chart source state as a new component/chart version.
+# Image upgrades remain a deliberate, separate lockfile change.
 set -euo pipefail
 
 if (($# != 3)); then
@@ -16,14 +16,14 @@ delivery_dir="${target}/delivery/target-application"
 lockfile="${target}/config/application.lock.yaml"
 
 for command_name in helm yq; do
-  command -v "$command_name" >/dev/null 2>&1 || { echo "${command_name} fehlt." >&2; exit 1; }
+  command -v "$command_name" >/dev/null 2>&1 || { echo "${command_name} is missing." >&2; exit 1; }
 done
-[[ -d "$app_dir" && -f "$lockfile" ]] || { echo 'Zielanwendung ist nicht vorbereitet.' >&2; exit 1; }
+[[ -d "$app_dir" && -f "$lockfile" ]] || { echo 'Target application is not prepared.' >&2; exit 1; }
 [[ "$component_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+([+-][0-9A-Za-z.-]+)?$ ]] || {
-  echo "Ungültige Component Version: ${component_version}" >&2; exit 1;
+  echo "Invalid component version: ${component_version}" >&2; exit 1;
 }
 [[ "$chart_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+([+-][0-9A-Za-z.-]+)?$ ]] || {
-  echo "Ungültige Chart-Version: ${chart_version}" >&2; exit 1;
+  echo "Invalid chart version: ${chart_version}" >&2; exit 1;
 }
 
 CHART_VERSION="$chart_version" COMPONENT_VERSION="$component_version" \
@@ -62,4 +62,4 @@ helm template target-application "${delivery_dir}/target-application-chart.tgz" 
 "${target}/scripts/discover-images.sh" \
   "${delivery_dir}/images.discovered.txt" "${delivery_dir}/rendered-connected.yaml"
 "${target}/scripts/validate-application-lock.sh" "$lockfile" "$delivery_dir"
-echo "Neue Eingaben vorbereitet: Component ${component_version}, Chart ${chart_version}"
+echo "New inputs prepared: component ${component_version}, chart ${chart_version}"

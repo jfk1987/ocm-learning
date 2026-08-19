@@ -1,4 +1,4 @@
-# Bewusst kleine Einzelinstanz für das lokale Lernlabor.
+# Deliberately small single instance for the local learning lab.
 replicaCount: 1
 
 persistence:
@@ -18,8 +18,8 @@ ingress:
 gitea:
   admin:
     existingSecret: forgejo-admin
-    # Das Secret initialisiert das Konto nur beim ersten Start. Danach wird das
-    # Passwort in Forgejo gepflegt und nicht bei jedem Helm-Upgrade überschrieben.
+    # The Secret initializes the account only on the first start. Afterwards, the
+    # password is managed in Forgejo and is not overwritten by every Helm upgrade.
     passwordMode: initialOnlyRequireReset
   config:
     database:
@@ -31,5 +31,5 @@ gitea:
     service:
       DISABLE_REGISTRATION: true
     webhook:
-      # Wird in Lab 03 für die Kommunikation mit Woodpecker benötigt.
+      # Required in Lab 03 for communication with Woodpecker.
       ALLOWED_HOST_LIST: external,loopback,private

@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
-# Verifiziert relative Markdown-Links. Web-URLs und reine Anker sind außerhalb
-# dieser statischen Repository-Prüfung.
+# Verifies relative Markdown links. Web URLs and standalone anchors are outside
+# the scope of this static repository check.
 
 root = File.expand_path('..', __dir__)
 errors = []
@@ -21,8 +21,8 @@ Dir.glob(File.join(root, '**', '*.md')).sort.each do |file|
 end
 
 unless errors.empty?
-  warn "Nicht auflösbare Markdown-Links:\n#{errors.join("\n")}"
+  warn "Unresolvable Markdown links:\n#{errors.join("\n")}"
   exit 1
 end
 
-puts 'Relative Markdown-Links sind gültig.'
+puts 'Relative Markdown links are valid.'

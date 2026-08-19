@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Baut einen separaten k3d-Zielcluster auf und blockiert danach Internet-Egress
-# auf seinen Workload-Nodes. Die direkt verbundene Lab-Registry bleibt sichtbar.
+# Builds a separate k3d target cluster and then blocks Internet egress
+# on its workload nodes. The directly connected lab registry remains visible.
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
@@ -9,19 +9,19 @@ registry=${LAB_REGISTRY_CONTAINER:-k3d-registry.localhost:5000}
 
 for command_name in docker k3d kubectl; do
   command -v "$command_name" >/dev/null 2>&1 || {
-    echo "Fehlendes Werkzeug: ${command_name}" >&2
+    echo "Missing tool: ${command_name}" >&2
     exit 1
   }
 done
 
 if k3d cluster list --no-headers | awk '{print $1}' | grep -Fxq "$cluster"; then
-  echo "Cluster existiert bereits: ${cluster}" >&2
-  echo "Zum erneuten Aufbau zuerst bewusst ausführen: k3d cluster delete ${cluster}" >&2
+  echo "Cluster already exists: ${cluster}" >&2
+  echo "To rebuild it, first explicitly run: k3d cluster delete ${cluster}" >&2
   exit 1
 fi
 
 docker inspect k3d-registry.localhost >/dev/null 2>&1 || {
-  echo 'Die Registry aus Lab 01 fehlt: k3d-registry.localhost' >&2
+  echo 'The registry from Lab 01 is missing: k3d-registry.localhost' >&2
   exit 1
 }
 
@@ -43,16 +43,16 @@ kubectl --context "k3d-${cluster}" -n kube-system rollout status \
 
 server="k3d-${cluster}-server-0"
 if docker exec "$server" ip route show default | grep -q '^default '; then
-  echo 'FEHLER: Der Ziel-Node besitzt weiterhin eine Default-Route.' >&2
+  echo 'ERROR: The target node still has a default route.' >&2
   exit 1
 fi
 docker exec "$server" wget -q -T 5 -O - \
   http://k3d-registry.localhost:5000/v2/ >/dev/null
 if docker exec "$server" wget -q -T 5 -O /dev/null \
   https://registry-1.docker.io/v2/; then
-  echo 'FEHLER: Der Ziel-Node erreicht weiterhin Docker Hub.' >&2
+  echo 'ERROR: The target node can still reach Docker Hub.' >&2
   exit 1
 fi
 
-echo "Air-Gap-Zielcluster bereit: k3d-${cluster}"
-echo 'Die Lab-Registry ist erreichbar; die Default-Route ins Internet fehlt.'
+echo "Air-gap target cluster ready: k3d-${cluster}"
+echo 'The lab registry is reachable; the default route to the Internet is absent.'

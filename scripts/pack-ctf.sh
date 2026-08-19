@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Verpackt ein CTF portabel und erzeugt eine relative SHA-256-Prüfsumme.
+# Packages a CTF portably and creates a relative SHA-256 checksum.
 set -euo pipefail
 
 if (($# != 2)); then
@@ -9,9 +9,9 @@ fi
 
 ctf=$1
 output=$2
-[[ -d "$ctf" ]] || { echo "CTF fehlt: $ctf" >&2; exit 1; }
+[[ -d "$ctf" ]] || { echo "CTF missing: $ctf" >&2; exit 1; }
 [[ ! -e "$output" && ! -e "${output}.sha256" ]] || {
-  echo "Ausgabe existiert bereits: ${output} oder ${output}.sha256" >&2
+  echo "Output already exists: ${output} or ${output}.sha256" >&2
   exit 1
 }
 
@@ -28,5 +28,5 @@ else
   (cd "$output_parent" && shasum -a 256 "$output_name" > "${output_name}.sha256")
 fi
 
-echo "Transportpaket: ${output}"
-echo "Prüfsumme: ${output}.sha256"
+echo "Transport package: ${output}"
+echo "Checksum: ${output}.sha256"

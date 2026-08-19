@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Automatischer Release-Schritt für CI: Constructor, selbstständiges CTF und
-# Registry-Transfer. Ein frisches Arbeitsverzeichnis pro Version ist Pflicht.
+# Automated release step for CI: constructor, self-contained CTF, and
+# registry transfer. A fresh working directory per version is required.
 set -euo pipefail
 
 if (($# != 3)); then
@@ -20,4 +20,4 @@ archive="${workdir}/transport-archive-${version}"
 "${root_dir}/scripts/generate-component-constructor.sh" "$lockfile" "$workdir" "$constructor"
 "${root_dir}/scripts/build-self-contained-ctf.sh" "$constructor" "$workdir" "$component" "$version" "$archive"
 "${root_dir}/scripts/import-self-contained-ctf.sh" "$archive" "$component" "$version" "$repository"
-echo "Lieferung abgeschlossen: ${component}:${version} in ${repository}"
+echo "Delivery complete: ${component}:${version} in ${repository}"

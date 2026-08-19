@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Erzeugt aus einem importierten Component Descriptor lokale Helm Values.
+# Creates local Helm values from an imported Component Descriptor.
 set -euo pipefail
 
 if (($# != 3)); then
@@ -10,9 +10,9 @@ fi
 descriptor=$1
 base_values=$2
 output=$3
-[[ -f "$descriptor" ]] || { echo "Descriptor fehlt: $descriptor" >&2; exit 1; }
-[[ -f "$base_values" ]] || { echo "Values fehlen: $base_values" >&2; exit 1; }
-[[ "$base_values" != "$output" ]] || { echo 'Ein- und Ausgabedatei müssen verschieden sein.' >&2; exit 1; }
+[[ -f "$descriptor" ]] || { echo "Descriptor missing: $descriptor" >&2; exit 1; }
+[[ -f "$base_values" ]] || { echo "Values missing: $base_values" >&2; exit 1; }
+[[ "$base_values" != "$output" ]] || { echo 'Input and output files must be different.' >&2; exit 1; }
 
 resource_reference() {
   local name=$1
@@ -24,7 +24,7 @@ resource_reference() {
     .access.imageReference // .access.globalAccess.imageReference // \"\"
   " "$descriptor")
   [[ -n "$reference" ]] || {
-    echo "Lokalisierte Image-Referenz fehlt: ${name}" >&2
+    echo "Localized image reference missing: ${name}" >&2
     exit 1
   }
   printf '%s' "$reference"
@@ -43,4 +43,4 @@ TOOLBOX_REFERENCE="$toolbox_reference" \
     .images.toolbox.reference = strenv(TOOLBOX_REFERENCE)
   ' "$output"
 
-echo "Lokalisierte Values erstellt: ${output}"
+echo "Localized values created: ${output}"

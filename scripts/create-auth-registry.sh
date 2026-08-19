@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Startet eine zweite, HTTP-only Lab-Registry mit Basic Auth. Nur für das
-# Credential-Resolution-Lab, nicht für Produktion.
+# Starts a second HTTP-only lab registry with basic auth. Only for the
+# credential resolution lab, not for production.
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
@@ -9,12 +9,12 @@ container=ocm-auth-registry
 username=ocm-user
 
 for command_name in docker openssl curl; do
-  command -v "$command_name" >/dev/null 2>&1 || { echo "${command_name} fehlt." >&2; exit 1; }
+  command -v "$command_name" >/dev/null 2>&1 || { echo "${command_name} is missing." >&2; exit 1; }
 done
 
 if docker inspect "$container" >/dev/null 2>&1; then
-  echo "Container existiert bereits: ${container}" >&2
-  echo "Zugangsdaten liegen in ${state_dir}/credentials.env" >&2
+  echo "Container already exists: ${container}" >&2
+  echo "Credentials are stored in ${state_dir}/credentials.env" >&2
   exit 1
 fi
 mkdir -p "$state_dir/auth" "$state_dir/data"
@@ -40,12 +40,12 @@ chmod 600 "${state_dir}/credentials.env"
 for _ in {1..30}; do
   if curl --fail --silent --user "${username}:${password}" \
     http://localhost:5001/v2/ >/dev/null; then
-    echo "Authentifizierte Registry bereit: http://localhost:5001"
-    echo "Zugangsdaten: ${state_dir}/credentials.env"
+    echo "Authenticated registry ready: http://localhost:5001"
+    echo "Credentials: ${state_dir}/credentials.env"
     exit 0
   fi
   sleep 1
 done
 docker logs "$container" >&2
-echo 'Registry wurde nicht rechtzeitig bereit.' >&2
+echo 'Registry did not become ready in time.' >&2
 exit 1

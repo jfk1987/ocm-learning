@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Entfernt/ergänzt die Default-Route der k3d-Workload-Nodes. Direkte
-# Docker-Netze (insbesondere die Lab-Registry) bleiben erreichbar.
+# Removes/adds the default route of the k3d workload nodes. Direct Docker
+# networks, especially the lab registry, remain reachable.
 set -euo pipefail
 
 if (($# < 1 || $# > 2)); then
@@ -21,7 +21,7 @@ done < <(
 )
 
 ((${#nodes[@]} > 0)) || {
-  echo "Keine Workload-Nodes für k3d-Cluster ${cluster} gefunden." >&2
+  echo "No workload nodes found for k3d cluster ${cluster}." >&2
   exit 1
 }
 
@@ -29,30 +29,30 @@ case "$action" in
   block)
     for node in "${nodes[@]}"; do
       docker exec "$node" sh -c 'ip route del default 2>/dev/null || true'
-      echo "Egress blockiert: ${node}"
+      echo "Egress blocked: ${node}"
     done
     ;;
   allow)
     gateway=$(docker network inspect "$network" \
       --format '{{(index .IPAM.Config 0).Gateway}}')
-    [[ -n "$gateway" ]] || { echo "Gateway für ${network} fehlt." >&2; exit 1; }
+    [[ -n "$gateway" ]] || { echo "Gateway for ${network} is missing." >&2; exit 1; }
     for node in "${nodes[@]}"; do
       docker exec "$node" sh -c "ip route replace default via ${gateway}"
-      echo "Egress erlaubt: ${node} via ${gateway}"
+      echo "Egress allowed: ${node} via ${gateway}"
     done
     ;;
   status)
     for node in "${nodes[@]}"; do
       printf '%s: ' "$node"
       if ! docker exec "$node" ip route show default | grep -q '^default '; then
-        echo 'blockiert (keine Default-Route)'
+        echo 'blocked (no default route)'
       else
         docker exec "$node" ip route show default
       fi
     done
     ;;
   *)
-    echo "Unbekannte Aktion: ${action}" >&2
+    echo "Unknown action: ${action}" >&2
     exit 64
     ;;
 esac

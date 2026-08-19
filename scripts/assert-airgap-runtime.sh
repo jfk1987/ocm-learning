@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Positiv-/Negativnachweis für den separaten Zielcluster.
+# Positive/negative check for the separate target cluster.
 set -euo pipefail
 
 if (($# != 2)); then
@@ -17,15 +17,15 @@ images=$(kubectl --context "$context" -n "$namespace" get pods -o json |
     ((.spec.initContainers // []) + (.spec.containers // []))[] |
     .image
   ' | sort -u)
-[[ -n "$images" ]] || { echo 'Keine Workload-Images gefunden.' >&2; exit 1; }
+[[ -n "$images" ]] || { echo 'No workload images found.' >&2; exit 1; }
 
 while IFS= read -r image; do
   [[ "$image" == "${allowed_prefix}"/* ]] || {
-    echo "Externe Image-Referenz gefunden: ${image}" >&2
+    echo "External image reference found: ${image}" >&2
     exit 1
   }
 done <<< "$images"
-printf 'Nur lokale Images:\n%s\n' "$images"
+printf 'Local images only:\n%s\n' "$images"
 
 kubectl --context "$context" -n "$namespace" rollout restart deployment/target-application-web
 kubectl --context "$context" -n "$namespace" rollout status \
@@ -42,10 +42,10 @@ kubectl --context "$context" -n "$negative_namespace" run upstream-must-fail \
 
 if kubectl --context "$context" -n "$negative_namespace" wait \
   --for=condition=Ready pod/upstream-must-fail --timeout=45s; then
-  echo 'FEHLER: Ein öffentliches Image konnte trotz Air Gap starten.' >&2
+  echo 'ERROR: A public image started despite the air gap.' >&2
   exit 1
 fi
 kubectl --context "$context" -n "$negative_namespace" get pod upstream-must-fail
 kubectl --context "$context" -n "$negative_namespace" describe pod upstream-must-fail |
   sed -n '/Events:/,$p'
-echo 'Air-Gap-Nachweis erfolgreich: lokaler Neustart klappt, Upstream-Pull scheitert.'
+echo 'Air-gap check succeeded: local restart works and the upstream pull fails.'

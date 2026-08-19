@@ -1,7 +1,6 @@
 apiVersion: v2
 name: target-application
-description: Leichtgewichtige Mehrkomponenten-Demo für den OCM-Lernpfad
+description: Lightweight multi-component demo for the OCM learning path
 type: application
 version: 0.1.0
 appVersion: 0.1.0
-

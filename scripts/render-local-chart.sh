@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Rendert ein bereits aus OCM extrahiertes Chart und verbietet externe Images.
+# Renders a chart already extracted from OCM and rejects external images.
 set -euo pipefail
 
 if (($# != 5)); then
@@ -17,4 +17,4 @@ output="${chart%.tgz}-${release}-rendered.yaml"
 helm template "$release" "$chart" --namespace "$namespace" --values "$values" > "$output"
 "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/assert-local-images.sh" "$output" "$registry"
 kubectl apply --dry-run=server -f "$output"
-echo "Geprüftes Manifest: ${output}"
+echo "Validated manifest: ${output}"
