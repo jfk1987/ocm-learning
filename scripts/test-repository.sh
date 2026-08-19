@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Schnelle statische Prüfung plus lokaler Generator-Test ohne Registry-Zugriff.
+# Performs a quick static check plus a local generator test without registry access.
 set -euo pipefail
 
 repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
@@ -7,25 +7,25 @@ cd "$repo_root"
 
 while IFS= read -r script; do
   bash -n "$script"
-  [[ -x "$script" ]] || { echo "Nicht ausführbar: ${script}" >&2; exit 1; }
+  [[ -x "$script" ]] || { echo "Not executable: ${script}" >&2; exit 1; }
 done < <(find scripts -maxdepth 1 -type f -name '*.sh' | sort)
-echo 'Shell-Syntax und Dateimodi sind gültig.'
+echo 'Shell syntax and file modes are valid.'
 
 if command -v ruby >/dev/null 2>&1; then
   ruby tests/check_yaml.rb
   ruby tests/check_markdown_links.rb
 else
-  echo 'SKIP: YAML-/Markdown-Test (ruby fehlt)'
+  echo 'SKIP: YAML/Markdown check (Ruby is missing)'
 fi
 
 if command -v helm >/dev/null 2>&1; then
   helm lint demo/target-application
 else
-  echo 'SKIP: helm lint (helm fehlt)'
+  echo 'SKIP: helm lint (Helm is missing)'
 fi
 
 if ! command -v yq >/dev/null 2>&1 || ! command -v helm >/dev/null 2>&1; then
-  echo 'SKIP: Constructor-Integrationstest (helm oder yq fehlt)'
+  echo 'SKIP: constructor integration test (Helm or yq is missing)'
   exit 0
 fi
 
@@ -48,7 +48,7 @@ if [[ "${OCM_TEST_REMOTE:-0}" == 1 ]] && command -v skopeo >/dev/null 2>&1; then
   case "$(uname -m)" in
     x86_64|amd64) test_arch=amd64 ;;
     aarch64|arm64) test_arch=arm64 ;;
-    *) echo "Nicht unterstützte Testarchitektur: $(uname -m)" >&2; exit 1 ;;
+    *) echo "Unsupported test architecture: $(uname -m)" >&2; exit 1 ;;
   esac
   resolve_test_image() {
     local source=$1
@@ -141,9 +141,9 @@ if command -v ocm >/dev/null 2>&1; then
       "ctf::${signing_ctf}//example.org/team/target-application:0.1.0" \
       >/dev/null
   else
-    echo 'SKIP: OCM-Signaturtest (openssl fehlt)'
+    echo 'SKIP: OCM signature test (OpenSSL is missing)'
   fi
 else
-  echo 'SKIP: OCM-Constructor-Schematest (ocm fehlt)'
+  echo 'SKIP: OCM constructor schema test (OCM is missing)'
 fi
-echo 'Lockfile-/Constructor-Integrationstest erfolgreich.'
+echo 'Lockfile/constructor integration test succeeded.'

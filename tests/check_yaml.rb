@@ -15,8 +15,8 @@ files.each do |file|
 end
 
 unless errors.empty?
-  warn "Ungültiges YAML:\n#{errors.join("\n")}"
+  warn "Invalid YAML:\n#{errors.join("\n")}"
   exit 1
 end
 
-puts "#{files.length} YAML-Dateien sind syntaktisch gültig."
+puts "#{files.length} YAML files are syntactically valid."

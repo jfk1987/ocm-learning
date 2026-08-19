@@ -1,10 +1,10 @@
-# Diese Datei als .woodpecker/ocm-delivery.yaml in target-application ablegen.
-# Das Toolimage wird in Lab 04 gebaut und in die lokale Registry gepusht.
+# Store this file as .woodpecker/ocm-delivery.yaml in target-application.
+# The tool image is built in Lab 04 and pushed to the local registry.
 when:
   - event: tag
 
 steps:
-  - name: release-eingaben-pruefen
+  - name: validate-release-inputs
     image: localhost:5000/lab/ocm-delivery:0.1.0
     pull: true
     commands:
@@ -19,14 +19,14 @@ steps:
       - test "$CI_COMMIT_TAG" = "$(yq -r '.component.version' config/application.lock.yaml)"
       - skopeo list-tags --tls-verify=false docker://k3d-registry.localhost:5000/lab/alpine
 
-  - name: ocm-komponente-liefern
+  - name: deliver-ocm-component
     image: localhost:5000/lab/ocm-delivery:0.1.0
     pull: true
     environment:
       DELIVERY_DIR: delivery/target-application
-      # Aus einem Pipeline-Pod ist localhost der Pod selbst. Die k3d-Registry
-      # ist über ihren Containernamen erreichbar. http:// verhindert, dass OCM
-      # gegen die bewusst TLS-lose Lab-Registry HTTPS verwendet.
+      # Inside a pipeline pod, localhost refers to the pod itself. The k3d registry
+      # is reachable through its container name. http:// prevents OCM from using
+      # HTTPS with the deliberately TLS-free lab registry.
       OCM_REPOSITORY: http://k3d-registry.localhost:5000/ocm
     commands:
       - ./scripts/deliver-application.sh config/application.lock.yaml "$DELIVERY_DIR" "$OCM_REPOSITORY"

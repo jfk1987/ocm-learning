@@ -1,6 +1,6 @@
-# Der k3d-Load-Balancer veröffentlicht Traefik auf dem Host an Port 8080.
-# Diese zweite Service-Adresse bietet denselben Port auch innerhalb des
-# Clusters an. Dadurch sind die öffentlichen OAuth-URLs aus Pods erreichbar.
+# The k3d load balancer exposes Traefik on host port 8080.
+# This second Service address also exposes the same port inside the
+# cluster. This makes the public OAuth URLs reachable from pods.
 apiVersion: v1
 kind: Service
 metadata:

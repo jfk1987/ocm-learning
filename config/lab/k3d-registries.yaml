@@ -1,9 +1,9 @@
-# Diese Datei wird beim Erzeugen des k3d-Clusters nach
-# /etc/rancher/k3s/registries.yaml kopiert.
+# This file is copied to
+# /etc/rancher/k3s/registries.yaml when the k3d cluster is created.
 #
-# Der Host arbeitet mit localhost:5000. Innerhalb des Docker-Netzes ist die
-# Registry dagegen über ihren k3d-Containernamen erreichbar. Der Mirror hält
-# die Image-Referenz in Helm Values und Kubernetes-Manifests trotzdem gleich.
+# The host uses localhost:5000. Within the Docker network, the registry is
+# reachable through its k3d container name. The mirror keeps the image
+# reference identical in Helm values and Kubernetes manifests.
 mirrors:
   "localhost:5000":
     endpoint:

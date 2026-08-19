@@ -1,5 +1,5 @@
-# Diese Vorlage wird in Lab 02 in das separate Repository der Zielanwendung
-# nach .woodpecker/smoke.yaml kopiert.
+# This template is copied into .woodpecker/smoke.yaml in the separate
+# target-application repository during Lab 02.
 when:
   - event: push
 
@@ -7,5 +7,5 @@ steps:
   - name: local-registry-smoke-test
     image: localhost:5000/lab/alpine:3.21
     commands:
-      - echo "Woodpecker-Pipeline läuft im Kubernetes-Backend."
+      - echo "Woodpecker pipeline is running on the Kubernetes backend."
       - cat /etc/alpine-release

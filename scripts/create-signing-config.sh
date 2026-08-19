@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Erzeugt Lab-Schlüssel und getrennte OCM-Konfigurationen für Signierer und
-# Prüfer. Das private Material darf die Connected Station nicht verlassen.
+# Creates lab keys and separate OCM configurations for signer and
+# verifier. The private material must not leave the connected station.
 set -euo pipefail
 
 if (($# != 1)); then
@@ -15,9 +15,9 @@ signer_config="${output}/signer.ocmconfig"
 verifier_config="${output}/verifier.ocmconfig"
 
 for file in "$private_key" "$public_key" "$signer_config" "$verifier_config"; do
-  [[ ! -e "$file" ]] || { echo "Ausgabe existiert bereits: ${file}" >&2; exit 1; }
+  [[ ! -e "$file" ]] || { echo "Output already exists: ${file}" >&2; exit 1; }
 done
-command -v openssl >/dev/null 2>&1 || { echo 'openssl fehlt.' >&2; exit 1; }
+command -v openssl >/dev/null 2>&1 || { echo 'openssl is missing.' >&2; exit 1; }
 
 mkdir -p "$output"
 output_absolute=$(cd "$output" && pwd)
@@ -61,6 +61,6 @@ configurations:
 EOF
 
 chmod 600 "$signer_config"
-echo "Signier-Konfiguration: ${signer_config}"
-echo "Prüf-Konfiguration: ${verifier_config}"
-echo "Nur public-key.pem und verifier.ocmconfig dürfen in die Zielzone."
+echo "Signer configuration: ${signer_config}"
+echo "Verifier configuration: ${verifier_config}"
+echo "Only public-key.pem and verifier.ocmconfig may be copied into the target zone."

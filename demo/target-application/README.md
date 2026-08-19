@@ -1,7 +1,6 @@
 # Target Application
 
-Dieses Chart ist die konkrete Zielanwendung des Lernpfads. Es enthält ein
-Web-Deployment, einen Redis-StatefulSet, einen Init-Container, einen
-Helm-Migrationshook und einen Helm-Test. Dadurch müssen drei unterschiedliche
-Images vollständig inventarisiert und mit OCM transportiert werden.
-
+This chart is the concrete target application for the learning path. It
+contains a web deployment, a Redis StatefulSet, an init container, a Helm
+migration hook, and a Helm test. As a result, three different images must be
+fully inventoried and transported with OCM.

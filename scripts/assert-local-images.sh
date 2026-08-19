@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Prüft gerenderte Manifeste. Kein Pod darf eine externe Registry referenzieren.
+# Checks rendered manifests. No pod may reference an external registry.
 set -euo pipefail
 
 if (($# != 2)); then
@@ -11,14 +11,14 @@ manifest=$1
 registry=$2
 images=$(yq -r '.. | select(has("image")) | .image | select(type == "!!str")' "$manifest" |
   grep -v '^---$' | sort -u)
-[[ -n "$images" ]] || { echo 'Keine Image-Felder gefunden.' >&2; exit 1; }
+[[ -n "$images" ]] || { echo 'No image fields found.' >&2; exit 1; }
 
 invalid=0
 while IFS= read -r image; do
   if [[ "$image" != "${registry}/"* ]]; then
-    printf 'Externe Image-Referenz gefunden: %s\n' "$image" >&2
+    printf 'External image reference found: %s\n' "$image" >&2
     invalid=1
   fi
 done <<< "$images"
 ((invalid == 0)) || exit 1
-echo 'Alle Images zeigen auf die lokale Registry.'
+echo 'All images point to the local registry.'

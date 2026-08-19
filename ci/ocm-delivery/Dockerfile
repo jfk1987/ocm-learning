@@ -1,4 +1,4 @@
-# Builder für den Woodpecker-Release-Job; nicht Teil der Zielanwendung.
+# Builder for the Woodpecker release job; not part of the target application.
 FROM public.ecr.aws/docker/library/alpine:3.21
 
 ARG HELM_VERSION=v3.17.3

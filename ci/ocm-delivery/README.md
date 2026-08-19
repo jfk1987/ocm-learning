@@ -1,9 +1,9 @@
 # OCM Delivery Builder
 
-Dieses Image ist der Ausführungscontainer für den Woodpecker-Release-Job. Es
-enthält OCM, Helm, Mike Farahs `yq` und Skopeo. Es ist ausdrücklich **nicht**
-Teil der Zielanwendungs-Komponente und darf im Vorbereitungslabor aus dem
-Internet gebaut oder bezogen werden.
+This image is the execution container for the Woodpecker release job. It
+contains OCM, Helm, Mike Farah's `yq`, and Skopeo. It is explicitly **not**
+part of the target application component and may be built or pulled from the
+Internet in the preparation lab.
 
 ```bash
 docker build \
@@ -14,8 +14,8 @@ docker run --rm localhost:5000/lab/ocm-delivery:0.1.0 -lc \
 docker push localhost:5000/lab/ocm-delivery:0.1.0
 ```
 
-Für Woodpecker dieses Image in `examples/ci/ocm-delivery.yaml` eintragen. Vor
-dem produktiven Einsatz werden alle Versionen in der Dockerfile wie ein
-normales Build-Artefakt überprüft und gepflegt. Die Dockerfile verwendet
-`TARGETARCH`, damit sie sowohl auf `amd64`- als auch auf `arm64`-Hosts gebaut
-werden kann. Im Lab wird für dieselbe Architektur wie der k3d-Node gebaut.
+Reference this image in `examples/ci/ocm-delivery.yaml` for Woodpecker. Before
+production use, all versions in the Dockerfile are checked and maintained like
+a normal build artifact. The Dockerfile uses `TARGETARCH` so it can be built
+on both `amd64` and `arm64` hosts. In the lab, it is built for the same
+architecture as the k3d node.
